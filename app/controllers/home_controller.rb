@@ -1,4 +1,8 @@
 class HomeController < ApplicationController
-  def wizard(name, phone_number, text)
+  
+  def wizard
+  	puts "#{params}"
   end
+
+
 end
