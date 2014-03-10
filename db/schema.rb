@@ -11,10 +11,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140310112310) do
+ActiveRecord::Schema.define(version: 20140310142116) do
 
   create_table "contacts", force: true do |t|
-    t.integer  "phone_number"
+    t.string   "phone_number"
     t.string   "name"
     t.boolean  "opted_in"
     t.datetime "created_at"
