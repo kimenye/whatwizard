@@ -11,7 +11,43 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140310084458) do
+ActiveRecord::Schema.define(version: 20140310095817) do
+
+  create_table "contacts", force: true do |t|
+    t.integer  "phone_number"
+    t.string   "name"
+    t.boolean  "opted_in"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "questions", force: true do |t|
+    t.text     "text"
+    t.integer  "step_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "questions", ["step_id"], name: "index_questions_on_step_id"
+
+  create_table "steps", force: true do |t|
+    t.string   "name"
+    t.string   "step_type"
+    t.string   "next_step"
+    t.integer  "order_index"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "system_responses", force: true do |t|
+    t.string   "text"
+    t.string   "response_type"
+    t.integer  "step_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "system_responses", ["step_id"], name: "index_system_responses_on_step_id"
 
   create_table "users", force: true do |t|
     t.string   "email",                  default: "", null: false
