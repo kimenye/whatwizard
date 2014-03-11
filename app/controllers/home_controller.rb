@@ -25,6 +25,11 @@ class HomeController < ApplicationController
   			contact = progress.contact
   			contact.opted_in = text.downcase == "yes"
   			contact.save!
+
+  			if contact.opted_in
+  				# next_step = step.next_step
+  				Progress.create! step_id: step.next_step_id, contact_id: @contact.id
+  			end
   		end
   	end
 
