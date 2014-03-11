@@ -19,10 +19,14 @@ class HomeController < ApplicationController
 
   private
 
-  	def yes step, value
+  	def is_valid? step, value
+  		matched = false
   		step.expected_answer.split(",").each do |ans|
-  			return value.downcase == ans.strip.downcase
+  			if value.downcase == ans.strip.downcase
+  				matched = true
+  			end
   		end
+  		matched
   	end
 
   	def progress_step progress, text
@@ -32,7 +36,7 @@ class HomeController < ApplicationController
   			contact = progress.contact
 
   			if contact.opted_in.nil?
-  				contact.opted_in = yes(step, text)
+  				contact.opted_in = is_valid?(step, text)
   				contact.save!
   			end  			
 
@@ -79,6 +83,31 @@ class HomeController < ApplicationController
   			
   			random_response = get_random(possible_responses)
   			return { type: "Response", text: random_response.text, phone_number: @contact.phone_number }
+  		else
+  			# yes-no
+  			responses = []
+  			if is_valid?(step, text)
+  				responses << { type: "Response", text: get_random_response(step, "valid").text, phone_number: @contact.phone_number }
+  				Progress.create! step_id: step.next_step_id, contact_id: @contact.id	
+  				if !step.next_step.nil?  					
+  					responses << get_next_question(step.next_step, @contact)
+  				end
+  			end
+  			return responses
+  		end
+  	end
+
+  	def get_random_response step, type
+  		get_random(SystemResponse.where(step_id: step.id, response_type: type))
+  	end
+
+  	def get_next_question step, contact
+  		random_question = get_random(Step.find(step).questions)
+  		if !random_question.nil?
+  			raw_text = random_question.text
+  			raw_text = raw_text.gsub(/{{contact_name}}/, contact.name) 			
+
+			return { type: "Question", text: raw_text, phone_number: contact.phone_number }
   		end
   	end
 
