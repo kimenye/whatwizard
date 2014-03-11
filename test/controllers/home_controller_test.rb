@@ -151,4 +151,21 @@ class HomeControllerTest < ActionController::TestCase
   	expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348" }, { type: "Question", text: question.text, phone_number: contact.phone_number }]}
   	assert_equal expected.to_json, response.body  	  	
   end
+
+  test "It should NOT progress a person to the next step question if it is a yes no question and they answer with no" do
+  	next_step = Step.create! name: "Collect Serial", step_type: "serial", order_index: 1, expected_answer: "/d{13}/"
+  	question = Question.create! text: "In order to stand a chance to win a trip to Ibiza, send us the 13 digit code on the side of your bottle. The more you enter the better your chances of winning.", step_id: next_step.id
+  	step = Step.create! name: "Customer", step_type: "yes-no", order_index: 0, expected_answer: "yes, yeah, offcourse, sometimes", next_step_id: next_step.id  	
+  	invalid = SystemResponse.create! text: "Sorry, only got time for serious chaps", step_id: step.id, response_type: "invalid"
+
+
+  	contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+  	progress = Progress.create! step_id: step.id, contact_id: contact.id
+
+  	post :wizard, { name: "dssd", phone_number: "254722778348", text: "no" }
+  	assert_response :success
+
+  	expected = { response: [{ type: "Response", text: invalid.text, phone_number: "254722778348" }]}
+  	assert_equal expected.to_json, response.body  	  	
+  end
 end

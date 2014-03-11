@@ -92,6 +92,8 @@ class HomeController < ApplicationController
   				if !step.next_step.nil?  					
   					responses << get_next_question(step.next_step, @contact)
   				end
+  			else
+  				responses << { type: "Response", text: get_random_response(step, "invalid").text, phone_number: @contact.phone_number }
   			end
   			return responses
   		end
