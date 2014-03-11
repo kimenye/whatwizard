@@ -12,7 +12,8 @@ class HomeController < ApplicationController
   		response = start
 		render :json => { response: response } 
   	else
-  		progress_step(current_progress, params[:text])
+  		response = progress_step(current_progress, params[:text])
+  		render :json => { response: response }
   	end
   end
 
@@ -29,6 +30,20 @@ class HomeController < ApplicationController
   			if contact.opted_in
   				# next_step = step.next_step
   				Progress.create! step_id: step.next_step_id, contact_id: @contact.id
+  				
+  				if !step.next_step.nil?
+  					random_question = get_random(Step.find(step.next_step).questions)
+			  		if !random_question.nil?
+			  			raw_text = random_question.text
+			  			raw_text = raw_text.gsub(/{{contact_name}}/, @contact.name)
+						
+						# send_msg raw_text  			
+
+						return { type: "Question", text: raw_text, phone_number: @contact.phone_number }
+			  		end
+  				end
+
+  				
   			end
   		end
   	end
