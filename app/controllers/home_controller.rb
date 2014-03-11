@@ -1,6 +1,5 @@
 class HomeController < ApplicationController
-  
-
+  skip_before_action :verify_authenticity_token	
   before_action :set_contact, only: [:wizard]
 
   def wizard
@@ -10,7 +9,8 @@ class HomeController < ApplicationController
   	if current_progress.nil?
 
   		# start the steps
-  		start
+  		response = start
+		render :json => { response: response } 
   	else
   		progress_step(current_progress, params[:text])
   	end
@@ -42,15 +42,16 @@ class HomeController < ApplicationController
 	  			raw_text = random_question.text
 	  			raw_text = raw_text.gsub(/{{contact_name}}/, @contact.name)
 				
-				send_msg raw_text  			
+				# send_msg raw_text  			
 
 				Progress.create! step_id: first_step.id, contact_id: @contact.id
+				return { type: "Question", text: raw_text, phone_number: @contact.phone_number }
 	  		end
 	  	end
   	end
 
   	def send_msg text
-  		if Rails.env == "production"
+  		if Rails.env == "production"  			
   		end
   	end
 
