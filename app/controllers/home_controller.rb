@@ -19,6 +19,12 @@ class HomeController < ApplicationController
 
   private
 
+  	def yes step, value
+  		step.expected_answer.split(",").each do |ans|
+  			return value.downcase == ans.strip.downcase
+  		end
+  	end
+
   	def progress_step progress, text
   		step = progress.step
   		if step.step_type == "opt-in"
@@ -26,7 +32,7 @@ class HomeController < ApplicationController
   			contact = progress.contact
 
   			if contact.opted_in.nil?
-  				contact.opted_in = text.downcase == "yes"
+  				contact.opted_in = yes(step, text)
   				contact.save!
   			end  			
 

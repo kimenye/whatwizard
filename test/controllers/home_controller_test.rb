@@ -34,13 +34,13 @@ class HomeControllerTest < ActionController::TestCase
   end
 
   test "It should opt a contact in if the contact answers yes to an opt-in question" do
- 	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0
+ 	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, Yea, Ndio"
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
 
 	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
   	assert_response :success
 
-  	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "yes"}  	
+  	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yes"}  	
   	assert_response :success
 
   	contact = Contact.find_by_phone_number("254722778348") 
@@ -48,7 +48,7 @@ class HomeControllerTest < ActionController::TestCase
   end
 
    test "It should opt-out a contact if the contact answers no to an opt-in question" do
- 	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0
+ 	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, Yea, Ndio"
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
   	rsp = SystemResponse.create! text: "Grow up first", step_id: opt_in_step.id
 
@@ -79,7 +79,7 @@ class HomeControllerTest < ActionController::TestCase
 
   test "It should advance the progress to the next step if the user opts-in" do
   	next_step = Step.create! name: "Heineken Consumer", step_type: "yes-no", order_index: 1
- 	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, next_step_id: next_step.id
+ 	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, next_step_id: next_step.id, expected_answer: "Yes, Yea, Ndio"
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
   	next_qn = Question.create! text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", step_id: next_step.id
 
@@ -87,6 +87,8 @@ class HomeControllerTest < ActionController::TestCase
   	assert_response :success
 
   	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yes"}  	
+  	assert_response :success
+ 	
   	assert_response :success
 
   	contact = Contact.find_by_phone_number("254722778348") 
