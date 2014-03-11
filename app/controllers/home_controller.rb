@@ -24,8 +24,11 @@ class HomeController < ApplicationController
   		if step.step_type == "opt-in"
   			# if it is an opt-in i.e. yes or no
   			contact = progress.contact
-  			contact.opted_in = text.downcase == "yes"
-  			contact.save!
+
+  			if contact.opted_in.nil?
+  				contact.opted_in = text.downcase == "yes"
+  				contact.save!
+  			end  			
 
   			if contact.opted_in
   				# next_step = step.next_step
@@ -78,7 +81,7 @@ class HomeController < ApplicationController
   	def set_contact
   		@contact = Contact.find_by_phone_number(params[:phone_number])
   		if @contact.nil?
-  			@contact = Contact.create! phone_number: params[:phone_number], name: params[:name], opted_in: false
+  			@contact = Contact.create! phone_number: params[:phone_number], name: params[:name], opted_in: nil
   		end
   		@contact
   	end

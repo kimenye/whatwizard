@@ -64,6 +64,9 @@ class HomeControllerTest < ActionController::TestCase
   	expected = { response: { type: "Response", text: rsp.text, phone_number: "254722778348" }}
   	assert_equal expected.to_json, response.body
 
+  	expected = { response: { type: "Response", text: rsp.text, phone_number: "254722778348" }}
+  	assert_equal expected.to_json, response.body
+
   	# what happens if a contact opt-out.
   	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yes"}  	
   	assert_response :success
@@ -72,9 +75,6 @@ class HomeControllerTest < ActionController::TestCase
   	# we will send them the same response
   	contact = Contact.find_by_phone_number("254722778348") 
   	assert_equal false, contact.opted_in
-
-  	expected = { response: { type: "Response", text: rsp.text, phone_number: "254722778348" }}
-  	assert_equal expected.to_json, response.body
   end
 
   test "It should advance the progress to the next step if the user opts-in" do
