@@ -115,4 +115,18 @@ class HomeControllerTest < ActionController::TestCase
   	expected = { response: { type: "Response", text: below.text, phone_number: "254722778348" }}
   	assert_equal expected.to_json, response.body
   end
+
+  test "It should accept a valid serial number based on the response" do
+  	next_step = Step.create! name: "Collect Serial", step_type: "serial", order_index: 1, expected_answer: "/d{13}/"
+
+  	valid = SystemResponse.create! text: "That's awesome. Super cool", step_id: next_step.id, response_type: "valid"
+ 	equal = SystemResponse.create! text: "Sorry that's not a valid serial", step_id: next_step.id, response_type: "invalid"
+ 	
+
+ 	post :wizard, { name: "dssd", phone_number: "254722778348", text: "1234567890123" }
+  	assert_response :success
+
+	expected = { response: { type: "Response", text: valid.text, phone_number: "254722778348" }}
+  	assert_equal expected.to_json, response.body  	
+  end
 end
