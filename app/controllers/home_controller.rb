@@ -74,14 +74,9 @@ class HomeController < ApplicationController
   		elsif step.step_type == "serial"
   			value = text.to_s
   			r = Regexp.new(step.expected_answer)
-
-  			if r =~ value
-  				possible_responses = SystemResponse.where(step_id: step.id, response_type: "valid")
-  			else
-  				possible_responses = SystemResponse.where(step_id: step.id, response_type: "invalid")
-  			end
+  			type = (r =~ value) ? "valid" : "invalid"
   			
-  			random_response = get_random(possible_responses)
+  			random_response = get_random_response(step, type)
   			return { type: "Response", text: random_response.text, phone_number: @contact.phone_number }
   		else
   			# yes-no
