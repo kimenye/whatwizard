@@ -43,4 +43,18 @@ class HomeControllerTest < ActionController::TestCase
   	assert_equal true, contact.opted_in
   end
 
+   test "It should opt-out a contact in if the contact answers no to an opt-in question" do
+ 	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0
+  	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
+
+	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
+  	assert_response :success
+
+  	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "No"}  	
+  	assert_response :success
+
+  	contact = Contact.find_by_phone_number("254722778348") 
+  	assert_equal false, contact.opted_in
+  end
+
 end
