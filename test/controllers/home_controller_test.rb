@@ -50,6 +50,7 @@ class HomeControllerTest < ActionController::TestCase
    test "It should opt-out a contact if the contact answers no to an opt-in question" do
  	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
+  	rsp = SystemResponse.create! text: "Grow up first", step_id: opt_in_step.id
 
 	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
   	assert_response :success
@@ -59,6 +60,9 @@ class HomeControllerTest < ActionController::TestCase
 
   	contact = Contact.find_by_phone_number("254722778348") 
   	assert_equal false, contact.opted_in
+
+  	expected = { response: { type: "Response", text: rsp.text, phone_number: "254722778348" }}
+  	assert_equal expected.to_json, response.body
   end
 
   test "It should advance the progress to the next step if the user opts-in" do
@@ -82,4 +86,8 @@ class HomeControllerTest < ActionController::TestCase
   	expected = { response: { type: "Question", text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", phone_number: "254722778348" }}
   	assert_equal expected.to_json, response.body
   end 
+
+  test "It should send a different response for a different question based on the response" do
+
+  end
 end

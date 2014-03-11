@@ -42,8 +42,9 @@ class HomeController < ApplicationController
 						return { type: "Question", text: raw_text, phone_number: @contact.phone_number }
 			  		end
   				end
-
-  				
+  			else
+  				random_response = get_random(SystemResponse.find_all_by_step_id(step.id))
+  				return { type: "Response", text: random_response.text, phone_number: @contact.phone_number }	 	
   			end
   		end
   	end
