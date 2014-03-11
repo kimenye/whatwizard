@@ -11,10 +11,24 @@ class HomeController < ApplicationController
 
   		# start the steps
   		start
+  	else
+  		progress_step(current_progress, params[:text])
   	end
   end
 
   private
+
+  	def progress_step progress, text
+  		step = progress.step
+  		if step.step_type == "opt-in"
+  			# if it is an opt-in i.e. yes or no
+  			contact = progress.contact
+  			contact.opted_in = text.downcase == "yes"
+  			contact.save!
+  		end
+  	end
+
+
   	def start
   		first_step = Step.find_by_order_index(0)  		
   		if !first_step.nil?
