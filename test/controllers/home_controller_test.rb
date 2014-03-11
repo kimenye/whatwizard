@@ -47,7 +47,7 @@ class HomeControllerTest < ActionController::TestCase
   	assert_equal true, contact.opted_in
   end
 
-   test "It should opt-out a contact in if the contact answers no to an opt-in question" do
+   test "It should opt-out a contact if the contact answers no to an opt-in question" do
  	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
 
@@ -65,7 +65,7 @@ class HomeControllerTest < ActionController::TestCase
   	next_step = Step.create! name: "Heineken Consumer", step_type: "yes-no", order_index: 1
  	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, next_step_id: next_step.id
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
-  	next_qn = Question.create! text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No.", step_id: next_step.id
+  	next_qn = Question.create! text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", step_id: next_step.id
 
 	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
   	assert_response :success
@@ -77,24 +77,9 @@ class HomeControllerTest < ActionController::TestCase
   	current = Progress.where("contact_id =?", contact.id).order(id: :asc).last
 
   	assert_equal next_step.id, current.step_id 
-  end  
 
- #   test "It should advance the progress to the next step if the user opts-in" do
- #  	next_step = Step.create! name: "Heineken Consumer", step_type: "yes-no", order_index: 1
- # 	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, next_step_id: next_step.id
- #  	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
- #  	next_qn = Question.create! text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No.", step_id: next_step.id
-
-	# post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
- #  	assert_response :success
-
- #  	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yes"}  	
- #  	assert_response :success
-
- #  	contact = Contact.find_by_phone_number("254722778348") 
- #  	current = Progress.where("contact_id =?", contact.id).order(id: :asc).last
-
- #  	assert_equal next_step.id, current.step_id 
- #  end  
-
+  	# need to test that the response to the api is the next question
+  	expected = { response: { type: "Question", text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", phone_number: "254722778348" }}
+  	assert_equal expected.to_json, response.body
+  end 
 end
