@@ -21,3 +21,8 @@
 
 en:
   hello: "Hello world"
+  admin:
+    actions: 
+      reset_participants:
+        menu: "Reset Participants"
+        title: "Reset Participants"

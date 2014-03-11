@@ -34,10 +34,10 @@ class HomeControllerTest < ActionController::TestCase
   end
 
   test "It should opt a contact in if the contact answers yes to an opt-in question" do
- 	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, Yea, Ndio"
+ 	  opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, Yea, Ndio"
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
 
-	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
+	  post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
   	assert_response :success
 
   	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yes"}  	
@@ -47,12 +47,12 @@ class HomeControllerTest < ActionController::TestCase
   	assert_equal true, contact.opted_in
   end
 
-   test "It should opt-out a contact if the contact answers no to an opt-in question" do
- 	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, Yea, Ndio"
+    test "It should opt-out a contact if the contact answers no to an opt-in question" do
+ 	  opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, Yea, Ndio"
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
   	rsp = SystemResponse.create! text: "Grow up first", step_id: opt_in_step.id
 
-	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
+	  post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
   	assert_response :success
 
   	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "No"}  	
@@ -76,11 +76,11 @@ class HomeControllerTest < ActionController::TestCase
 
   test "It should advance the progress to the next step if the user opts-in" do
   	next_step = Step.create! name: "Heineken Consumer", step_type: "yes-no", order_index: 1
- 	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, next_step_id: next_step.id, expected_answer: "Yes, Yea, Ndio"
+ 	  opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, next_step_id: next_step.id, expected_answer: "Yes, Yea, Ndio"
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
   	next_qn = Question.create! text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", step_id: next_step.id
 
-	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
+	  post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
   	assert_response :success
 
   	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yes"}  	
@@ -100,9 +100,9 @@ class HomeControllerTest < ActionController::TestCase
 
   test "It should send a different response for a different question based on the response" do
   	next_step = Step.create! name: "Number of drinks per week", step_type: "numeric", order_index: 1, expected_answer: "20"
- 	above = SystemResponse.create! text: "Slow down tiger", step_id: next_step.id, response_type: "more_than"
- 	equal = SystemResponse.create! text: "Thats amazing", step_id: next_step.id, response_type: "equals"
- 	below = SystemResponse.create! text: "Drink some more", step_id: next_step.id, response_type: "less_than"
+   	above = SystemResponse.create! text: "Slow down tiger", step_id: next_step.id, response_type: "more_than"
+   	equal = SystemResponse.create! text: "Thats amazing", step_id: next_step.id, response_type: "equals"
+   	below = SystemResponse.create! text: "Drink some more", step_id: next_step.id, response_type: "less_than"
   	
 
   	contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
@@ -119,16 +119,16 @@ class HomeControllerTest < ActionController::TestCase
   	next_step = Step.create! name: "Collect Serial", step_type: "serial", order_index: 1, expected_answer: '\d{13}'
 
   	valid = SystemResponse.create! text: "That's awesome. Super cool", step_id: next_step.id, response_type: "valid"
- 	equal = SystemResponse.create! text: "Sorry that's not a valid serial", step_id: next_step.id, response_type: "invalid"
+ 	  equal = SystemResponse.create! text: "Sorry that's not a valid serial", step_id: next_step.id, response_type: "invalid"
  	
- 	contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+ 	  contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
   	progress = Progress.create! step_id: next_step.id, contact_id: contact.id
 
 
- 	post :wizard, { name: "dssd", phone_number: "254722778348", text: "1234567890123" }
+ 	  post :wizard, { name: "dssd", phone_number: "254722778348", text: "1234567890123" }
   	assert_response :success
 
-	expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348" }] }
+	  expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348" }] }
   	assert_equal expected.to_json, response.body  	
   end
 

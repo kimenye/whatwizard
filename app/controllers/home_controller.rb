@@ -5,16 +5,23 @@ class HomeController < ApplicationController
   def wizard
   	# puts "#{params}"
 
-  	current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
-  	if current_progress.nil?
+    if params[:text].downcase != ENV['RESET_CODE'].downcase
+      current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+      if current_progress.nil?
 
-  		# start the steps
-  		response = start
-		render :json => { response: response } 
-  	else
-  		response = progress_step(current_progress, params[:text])
-  		render :json => { response: response }
-  	end
+        # start the steps
+        response = start
+        render :json => { response: response } 
+      else
+        response = progress_step(current_progress, params[:text])
+        render :json => { response: response }
+      end
+    else
+      @contact.opted_in = nil
+      @contact.save!
+      Progress.where(contact_id: @contact.id).destroy_all
+      render json: { response: [{ type: "Response", text: "Jedi! Start again you can...", phone_number: @contact.phone_number }, start.first] }
+    end
   end
 
   private
@@ -69,8 +76,16 @@ class HomeController < ApplicationController
   				possible_responses = SystemResponse.where(step_id: step.id, response_type: "more_than")
   			end
   			
+        
   			random_response = get_random(possible_responses)
-  			return [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number }]
+        responses = [ {type: "Response", text: random_response.text, phone_number: @contact.phone_number }]
+        
+        if !step.next_step.nil?
+          Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
+          responses << get_next_question(step.next_step, @contact)
+        end
+
+  			return responses
   		elsif step.step_type == "serial"
   			value = text.to_s
   			r = Regexp.new(step.expected_answer)
@@ -104,7 +119,7 @@ class HomeController < ApplicationController
   			raw_text = random_question.text
   			raw_text = raw_text.gsub(/{{contact_name}}/, contact.name) 			
 
-			return { type: "Question", text: raw_text, phone_number: contact.phone_number }
+			  return { type: "Question", text: raw_text, phone_number: contact.phone_number }
   		end
   	end
 
