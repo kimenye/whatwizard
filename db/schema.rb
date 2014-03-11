@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140310185447) do
+ActiveRecord::Schema.define(version: 20140311145010) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -47,6 +47,7 @@ ActiveRecord::Schema.define(version: 20140310185447) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "next_step_id"
+    t.string   "expected_answer"
   end
 
   add_index "steps", ["next_step_id"], name: "index_steps_on_next_step_id"
@@ -57,6 +58,7 @@ ActiveRecord::Schema.define(version: 20140310185447) do
     t.integer  "step_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "value"
   end
 
   add_index "system_responses", ["step_id"], name: "index_system_responses_on_step_id"

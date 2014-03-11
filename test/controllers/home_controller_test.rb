@@ -100,15 +100,19 @@ class HomeControllerTest < ActionController::TestCase
   end 
 
   test "It should send a different response for a different question based on the response" do
-  	next_step = Step.create! name: "Number of drinks per week", step_type: "numeric", order_index: 1
- 	below = SystemResponse.create! text: "Slow down tiger", step_id: next_step.id
+  	next_step = Step.create! name: "Number of drinks per week", step_type: "numeric", order_index: 1, expected_answer: "20"
+ 	above = SystemResponse.create! text: "Slow down tiger", step_id: next_step.id, response_type: "more_than"
+ 	equal = SystemResponse.create! text: "Thats amazing", step_id: next_step.id, response_type: "equals"
+ 	below = SystemResponse.create! text: "Drink some more", step_id: next_step.id, response_type: "less_than"
   	
 
   	contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
   	progress = Progress.create! step_id: next_step.id, contact_id: contact.id
 
-  	post :wizard, { name: "dssd", phone_number: "254722778348", text: "20" }
+  	post :wizard, { name: "dssd", phone_number: "254722778348", text: "10" }
   	assert_response :success
 
+  	expected = { response: { type: "Response", text: below.text, phone_number: "254722778348" }}
+  	assert_equal expected.to_json, response.body
   end
 end

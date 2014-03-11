@@ -47,6 +47,20 @@ class HomeController < ApplicationController
   				random_response = get_random(SystemResponse.where(step_id: step.id))
   				return { type: "Response", text: random_response.text, phone_number: @contact.phone_number }	 	
   			end
+  		elsif step.step_type == "numeric"
+  			# need to handle if we don't understand what the user has entered
+  			value = text.to_i
+
+  			if value == step.expected_answer.to_i
+  				possible_responses = SystemResponse.where(step_id: step.id, response_type: "equals")
+  			elsif value <= step.expected_answer.to_i
+  				possible_responses = SystemResponse.where(step_id: step.id, response_type: "less_than")
+  			else
+  				possible_responses = SystemResponse.where(step_id: step.id, response_type: "more_than")
+  			end
+  			
+  			random_response = get_random(possible_responses)
+  			return { type: "Response", text: random_response.text, phone_number: @contact.phone_number }
   		end
   	end
 
