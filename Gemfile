@@ -20,6 +20,10 @@ group :development do
   gem 'rails_layout'
 end
 
+group :production do
+  gem 'mysql2'
+  gem 'unicorn'
+end
 
 gem 'minitest-rails'
 gem 'minitest-colorize'
