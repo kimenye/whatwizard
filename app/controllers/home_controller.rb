@@ -38,15 +38,13 @@ class HomeController < ApplicationController
   					random_question = get_random(Step.find(step.next_step).questions)
 			  		if !random_question.nil?
 			  			raw_text = random_question.text
-			  			raw_text = raw_text.gsub(/{{contact_name}}/, @contact.name)
-						
-						# send_msg raw_text  			
+			  			raw_text = raw_text.gsub(/{{contact_name}}/, @contact.name) 			
 
 						return { type: "Question", text: raw_text, phone_number: @contact.phone_number }
 			  		end
   				end
   			else
-  				random_response = get_random(SystemResponse.find_all_by_step_id(step.id))
+  				random_response = get_random(SystemResponse.where(step_id: step.id))
   				return { type: "Response", text: random_response.text, phone_number: @contact.phone_number }	 	
   			end
   		end

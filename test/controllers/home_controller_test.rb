@@ -100,6 +100,15 @@ class HomeControllerTest < ActionController::TestCase
   end 
 
   test "It should send a different response for a different question based on the response" do
+  	next_step = Step.create! name: "Number of drinks per week", step_type: "numeric", order_index: 1
+ 	below = SystemResponse.create! text: "Slow down tiger", step_id: next_step.id
+  	
+
+  	contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+  	progress = Progress.create! step_id: next_step.id, contact_id: contact.id
+
+  	post :wizard, { name: "dssd", phone_number: "254722778348", text: "20" }
+  	assert_response :success
 
   end
 end
