@@ -50,12 +50,12 @@ class HomeController < ApplicationController
 			  			raw_text = random_question.text
 			  			raw_text = raw_text.gsub(/{{contact_name}}/, @contact.name) 			
 
-						return { type: "Question", text: raw_text, phone_number: @contact.phone_number }
+						return [{ type: "Question", text: raw_text, phone_number: @contact.phone_number }]
 			  		end
   				end
   			else
   				random_response = get_random(SystemResponse.where(step_id: step.id))
-  				return { type: "Response", text: random_response.text, phone_number: @contact.phone_number }	 	
+  				return [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number }]	 	
   			end
   		elsif step.step_type == "numeric"
   			# need to handle if we don't understand what the user has entered
@@ -70,14 +70,14 @@ class HomeController < ApplicationController
   			end
   			
   			random_response = get_random(possible_responses)
-  			return { type: "Response", text: random_response.text, phone_number: @contact.phone_number }
+  			return [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number }]
   		elsif step.step_type == "serial"
   			value = text.to_s
   			r = Regexp.new(step.expected_answer)
   			type = (r =~ value) ? "valid" : "invalid"
   			
   			random_response = get_random_response(step, type)
-  			return { type: "Response", text: random_response.text, phone_number: @contact.phone_number }
+  			return [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number }]
   		else
   			# yes-no
   			responses = []
@@ -120,7 +120,7 @@ class HomeController < ApplicationController
 				# send_msg raw_text  			
 
 				Progress.create! step_id: first_step.id, contact_id: @contact.id
-				return { type: "Question", text: raw_text, phone_number: @contact.phone_number }
+				return [{ type: "Question", text: raw_text, phone_number: @contact.phone_number }]
 	  		end
 	  	end
   	end

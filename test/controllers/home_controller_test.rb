@@ -29,7 +29,7 @@ class HomeControllerTest < ActionController::TestCase
   	assert_equal opt_in_step.id, progress.step.id
   	
 
-  	expected = { response: { type: "Question", text: "Niaje dsfsdf! Before we continue, are you over 18. Please reply with Yes or No.", phone_number: "254722778348" }}
+  	expected = { response: [{ type: "Question", text: "Niaje dsfsdf! Before we continue, are you over 18. Please reply with Yes or No.", phone_number: "254722778348" }] }
   	assert_equal expected.to_json, response.body
   end
 
@@ -61,10 +61,7 @@ class HomeControllerTest < ActionController::TestCase
   	contact = Contact.find_by_phone_number("254722778348") 
   	assert_equal false, contact.opted_in
 
-  	expected = { response: { type: "Response", text: rsp.text, phone_number: "254722778348" }}
-  	assert_equal expected.to_json, response.body
-
-  	expected = { response: { type: "Response", text: rsp.text, phone_number: "254722778348" }}
+  	expected = { response: [{ type: "Response", text: rsp.text, phone_number: "254722778348" }] }
   	assert_equal expected.to_json, response.body
 
   	# what happens if a contact opt-out.
@@ -97,7 +94,7 @@ class HomeControllerTest < ActionController::TestCase
   	assert_equal next_step.id, current.step_id 
 
   	# need to test that the response to the api is the next question
-  	expected = { response: { type: "Question", text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", phone_number: "254722778348" }}
+  	expected = { response: [{ type: "Question", text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", phone_number: "254722778348" }] }
   	assert_equal expected.to_json, response.body
   end 
 
@@ -114,7 +111,7 @@ class HomeControllerTest < ActionController::TestCase
   	post :wizard, { name: "dssd", phone_number: "254722778348", text: "10" }
   	assert_response :success
 
-  	expected = { response: { type: "Response", text: below.text, phone_number: "254722778348" }}
+  	expected = { response: [{ type: "Response", text: below.text, phone_number: "254722778348" }] }
   	assert_equal expected.to_json, response.body
   end
 
@@ -131,7 +128,7 @@ class HomeControllerTest < ActionController::TestCase
  	post :wizard, { name: "dssd", phone_number: "254722778348", text: "1234567890123" }
   	assert_response :success
 
-	expected = { response: { type: "Response", text: valid.text, phone_number: "254722778348" }}
+	expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348" }] }
   	assert_equal expected.to_json, response.body  	
   end
 
