@@ -104,6 +104,7 @@ class HomeController < ApplicationController
       else
   			# yes-no
   			responses = []
+        
   			if is_valid?(step, text)
           random = get_random_response(step, "valid")
   				responses << { type: "Response", text: random.text, phone_number: @contact.phone_number,image_id: random.remote_asset_id  }
