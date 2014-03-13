@@ -62,7 +62,7 @@ class HomeController < ApplicationController
   				end
   			else
   				random_response = get_random(SystemResponse.where(step_id: step.id))
-  				return [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number }]	 	
+  				return [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number, image_id: random_response.remote_asset_id  }]	 	
   			end
   		elsif step.step_type == "numeric"
   			# need to handle if we don't understand what the user has entered
@@ -78,7 +78,7 @@ class HomeController < ApplicationController
   			
         
   			random_response = get_random(possible_responses)
-        responses = [ {type: "Response", text: random_response.text, phone_number: @contact.phone_number }]
+        responses = [ {type: "Response", text: random_response.text, phone_number: @contact.phone_number, image_id: random_response.remote_asset_id }]
         
         if !step.next_step.nil?
           Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
@@ -92,11 +92,11 @@ class HomeController < ApplicationController
   			type = (r =~ value) ? "valid" : "invalid"
   			
   			random_response = get_random_response(step, type)
-  			return [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number }]
+  			return [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number, image_id: random_response.remote_asset_id  }]
   		elsif step.step_type == "free-text"
 
         random_response = get_random_response(step, nil)
-        responses = [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number }]
+        responses = [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number,image_id: random_response.remote_asset_id  }]
         if !step.next_step.nil?
           responses << get_next_question(step.next_step, @contact)
         end
@@ -105,13 +105,15 @@ class HomeController < ApplicationController
   			# yes-no
   			responses = []
   			if is_valid?(step, text)
-  				responses << { type: "Response", text: get_random_response(step, "valid").text, phone_number: @contact.phone_number }
+          random = get_random_response(step, "valid")
+  				responses << { type: "Response", text: random.text, phone_number: @contact.phone_number,image_id: random.remote_asset_id  }
   				Progress.create! step_id: step.next_step_id, contact_id: @contact.id	
   				if !step.next_step.nil?  					
   					responses << get_next_question(step.next_step, @contact)
   				end
   			else
-  				responses << { type: "Response", text: get_random_response(step, "invalid").text, phone_number: @contact.phone_number }
+          random = get_random_response(step, "invalid")
+  				responses << { type: "Response", text: random.text, phone_number: @contact.phone_number, image_id: random.remote_asset_id  }
   			end
   			return responses
   		end

@@ -58,13 +58,64 @@ RailsAdmin.config do |config|
     end
 
     config.model 'SystemResponse' do
-      label 'Response'  
+      label 'Response' 
+
+      list do
+        field :step 
+        field :response_type  
+        field :text
+        field :image
+      end
 
       edit do 
         field :text
         field :response_type
         field :step
+        field :image
       end
+    end
+
+    member :upload_image do
+      register_instance_option :link_icon do
+        'icon-upload'
+      end
+
+      register_instance_option :visible? do
+        bindings[:abstract_model].to_s == "SystemResponse"
+      end      
+
+      register_instance_option :http_methods do
+          [:get, :post]
+      end
+
+      register_instance_option :controller do
+        Proc.new do
+          if params.has_key?(:submit)
+            require 'httmultiparty'
+            class ImageUploader
+              include HTTMultiParty
+              base_uri ENV['API_URL']  
+            end
+
+            # get the response by id
+            response = SystemResponse.find_by_id(params[:id])
+            
+            if !response.image.nil?
+              result =  ImageUploader.post('/assets/', :query => { files: [File.new(response.image.path)]  }, :detect_mime_type => true,
+                :headers => { "Accept" => "application/json"})
+
+              response.remote_asset_id = result["id"]
+              response.save!
+            end
+
+            redirect_to back_or_index, notice: "Image Uploaded"
+
+          else
+            render "upload_image"
+          end
+        end
+      end
+
     end
 
     collection :reset_participants do

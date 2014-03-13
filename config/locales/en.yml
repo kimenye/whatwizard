@@ -26,3 +26,8 @@ en:
       reset_participants:
         menu: "Reset Participants"
         title: "Reset Participants"
+        breadcrumb: "Reset Participants"
+      upload_image:
+        menu: "Upload Image"
+        title: "Upload Image"
+        breadcrumb: "Upload Image"
