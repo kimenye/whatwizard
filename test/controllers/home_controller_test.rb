@@ -165,4 +165,21 @@ class HomeControllerTest < ActionController::TestCase
   	expected = { response: [{ type: "Response", text: invalid.text, phone_number: "254722778348" }]}
   	assert_equal expected.to_json, response.body  	  	
   end
+
+  test "It should accept any text for free form answer" do
+    step = Step.create! name: "Man of the World", step_type: "free-text", order_index: 0, expected_answer: ""
+    question = Question.create! text: "Why are you a man of the world?", step_id: step.id
+
+    valid = SystemResponse.create! text: "Mmh. Humility is not one of your strengths.", step_id: step.id
+
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    progress = Progress.create! step_id: step.id, contact_id: contact.id
+
+    post :wizard, { name: "dssd", phone_number: "254722778348", text: "and i cannot lie" }
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348" }]}
+    assert_equal expected.to_json, response.body        
+
+  end
 end

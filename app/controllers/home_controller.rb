@@ -93,7 +93,15 @@ class HomeController < ApplicationController
   			
   			random_response = get_random_response(step, type)
   			return [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number }]
-  		else
+  		elsif step.step_type == "free-text"
+
+        random_response = get_random_response(step, nil)
+        responses = [{ type: "Response", text: random_response.text, phone_number: @contact.phone_number }]
+        if !step.next_step.nil?
+          responses << get_next_question(step.next_step, @contact)
+        end
+        return responses
+      else
   			# yes-no
   			responses = []
   			if is_valid?(step, text)
@@ -110,7 +118,11 @@ class HomeController < ApplicationController
   	end
 
   	def get_random_response step, type
-  		get_random(SystemResponse.where(step_id: step.id, response_type: type))
+      if !type.nil?
+  		  get_random(SystemResponse.where(step_id: step.id, response_type: type))
+      else
+        get_random(SystemResponse.where(step_id: step.id))
+      end
   	end
 
   	def get_next_question step, contact
