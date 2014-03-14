@@ -94,7 +94,7 @@ class HomeControllerTest < ActionController::TestCase
   	assert_equal next_step.id, current.step_id 
 
   	# need to test that the response to the api is the next question
-  	expected = { response: [{ type: "Question", text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", phone_number: "254722778348" }] }
+  	expected = { response: [{ type: "Question", text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", phone_number: "254722778348", image_id: nil }] }
   	assert_equal expected.to_json, response.body
   end 
 
@@ -145,7 +145,7 @@ class HomeControllerTest < ActionController::TestCase
   	post :wizard, { name: "dssd", phone_number: "254722778348", text: "yes" }
   	assert_response :success
 
-  	expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }, { type: "Question", text: question.text, phone_number: contact.phone_number }]}
+  	expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }, { type: "Question", text: question.text, phone_number: contact.phone_number, image_id: nil }]}
   	assert_equal expected.to_json, response.body  	  	
   end
 
@@ -162,7 +162,7 @@ class HomeControllerTest < ActionController::TestCase
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "no" }
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }, { type: "Question", text: question.text, phone_number: contact.phone_number }]}
+    expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }, { type: "Question", text: question.text, phone_number: contact.phone_number, image_id: nil }]}
     assert_equal expected.to_json, response.body        
   end
 
@@ -197,7 +197,6 @@ class HomeControllerTest < ActionController::TestCase
 
     expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }]}
     assert_equal expected.to_json, response.body        
-
   end
 
   test "If a user provides an answer that is not part of what is expected then we should prompt them that we didn't undestand" do
@@ -211,5 +210,42 @@ class HomeControllerTest < ActionController::TestCase
 
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "go to hell!" }
     assert_response :success
+
+    expected = { response: [{ type: "Response", text: unknown.text, phone_number: "254722778348", image_id: nil }]}
+    assert_equal expected.to_json, response.body
+  end
+
+  test "If a user gives a wrong answer then later gives the rebound phrase, they can get asked the same question" do
+    step = Step.create! name: "Customer", step_type: "yes-no", order_index: 0, expected_answer: "yes", wrong_answer: "no", rebound: "Heineken"
+    invalid = SystemResponse.create! text: "Then there's some good news: you can get one in a bar near you! :) reply with 'Heineken' once you've tasted that quality", step_id: step.id, response_type: "invalid"
+    rebound = SystemResponse.create! text: "Good to hear from you again. Did you enjoy a world-class Heineken since last time?", step_id: step.id, response_type: "rebound"
+
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    progress = Progress.create! step_id: step.id, contact_id: contact.id
+
+    post :wizard, { name: "dssd", phone_number: "254722778348", text: "no" }
+    assert_response :success
+
+    post :wizard, { name: "dssd", phone_number: "254722778348", text: "Heineken"}
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: rebound.text, phone_number: "254722778348", image_id: nil }]}
+    assert_equal expected.to_json, response.body
+  end
+
+  it "Should accept an image or video if the step allows for it" do
+    final = Step.create! name: "Challenge", step_type: "free-text", order_index: 1
+    step = Step.create! name: "Customer", step_type: "serial", order_index: 0, expected_answer: "yes", wrong_answer: "8712000900205", next_step_id: final.id
+    prompt = Question.create! text: "Why should you win this?", step_id: final.id
+
+    valid_video = SystemResponse.create! text: "Well, let me take a look at that", response_type: "multimedia", step_id: step.id
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    progress = Progress.create! step_id: step.id, contact_id: contact.id
+
+    post :wizard, { name: "dssd", phone_number: "254722778348", multimedia: true }
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: valid_video.text, phone_number: "254722778348", image_id: nil }, { type: "Question", text: prompt.text, phone_number: "254722778348", image_id: nil}]}
+    assert_equal expected.to_json, response.body    
   end
 end

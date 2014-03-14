@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140314113023) do
+ActiveRecord::Schema.define(version: 20140314150251) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -36,6 +36,11 @@ ActiveRecord::Schema.define(version: 20140314113023) do
     t.integer  "step_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "image_file_name"
+    t.string   "image_content_type"
+    t.integer  "image_file_size"
+    t.datetime "image_updated_at"
+    t.integer  "remote_asset_id"
   end
 
   add_index "questions", ["step_id"], name: "index_questions_on_step_id"
@@ -50,6 +55,7 @@ ActiveRecord::Schema.define(version: 20140314113023) do
     t.text     "expected_answer", limit: 255
     t.boolean  "allow_continue"
     t.text     "wrong_answer"
+    t.text     "rebound"
   end
 
   add_index "steps", ["next_step_id"], name: "index_steps_on_next_step_id"

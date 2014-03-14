@@ -3,24 +3,38 @@ class HomeController < ApplicationController
   before_action :set_contact, only: [:wizard]
 
   def wizard
-    # puts "#{params}"
-
-    if params[:text].downcase != ENV['RESET_CODE'].downcase
-      current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
-      if current_progress.nil?
-
-        # start the steps
-        response = start
-        render :json => { response: response } 
+    if params.has_key?(:text) 
+      if params[:text].downcase != ENV['RESET_CODE'].downcase
+        current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+        if current_progress.nil?
+          # start the steps
+          response = start
+          render :json => { response: response } 
+        else
+          response = progress_step(current_progress, params[:text])
+          render :json => { response: response }
+        end
       else
-        response = progress_step(current_progress, params[:text])
-        render :json => { response: response }
+        @contact.opted_in = nil
+        @contact.save!
+        Progress.where(contact_id: @contact.id).destroy_all
+        render json: { response: [{ type: "Response", text: "Jedi! Start again you can...", phone_number: @contact.phone_number }, start.first] }
       end
-    else
-      @contact.opted_in = nil
-      @contact.save!
-      Progress.where(contact_id: @contact.id).destroy_all
-      render json: { response: [{ type: "Response", text: "Jedi! Start again you can...", phone_number: @contact.phone_number }, start.first] }
+    else      
+      current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+      if !current_progress.nil?
+        random_response = get_random_response(current_progress.step, "multimedia")
+        responses = [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: random_response.remote_asset_id  }]
+        
+        if !current_progress.step.next_step.nil?
+          responses << get_next_question(current_progress.step.next_step, @contact)
+        end
+
+        render :json => { response: responses }
+      else
+        response = start
+        render :json => { response: response }     
+      end
     end
   end
 
@@ -32,12 +46,18 @@ class HomeController < ApplicationController
 
     def matches? match, value
       matched = false
-      match.split(",").each do |ans|
-        if value.downcase == ans.strip.downcase
-          matched = true
+      if !match.nil?
+        match.split(",").each do |ans|
+          if value.downcase == ans.strip.downcase
+            matched = true
+          end
         end
       end
       matched
+    end
+
+    def is_rebound? step, value
+      matches?(step.rebound, value)
     end
 
     def is_invalid? step, value
@@ -70,7 +90,7 @@ class HomeController < ApplicationController
           if !step.next_step.nil?
             random_question = get_random(Step.find(step.next_step).questions)
             if !random_question.nil?              
-              return [{ type: "Question", text: personalize(random_question.text), phone_number: @contact.phone_number }]
+              return [{ type: "Question", text: personalize(random_question.text), phone_number: @contact.phone_number, image_id: random_question.remote_asset_id }]
             end
           end
         else
@@ -117,7 +137,6 @@ class HomeController < ApplicationController
       else
         # yes-no
         responses = []
-        
         if is_valid?(step, text)
           random = get_random_response(step, "valid")
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number,image_id: random.remote_asset_id  }
@@ -131,6 +150,9 @@ class HomeController < ApplicationController
           if step.allow_continue
             responses << move_on(step)
           end
+        elsif is_rebound?(step, text)          
+          random = get_random_response(step, "rebound")
+          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: random.remote_asset_id  }              
         else
           # cant understand
           random = get_random_response(step, "unknown")
@@ -159,7 +181,7 @@ class HomeController < ApplicationController
     def get_next_question step, contact
       random_question = get_random(Step.find(step).questions)
       if !random_question.nil?
-        return { type: "Question", text: personalize(random_question.text), phone_number: contact.phone_number }
+        return { type: "Question", text: personalize(random_question.text), phone_number: contact.phone_number, image_id: random_question.remote_asset_id }
       end
     end
 

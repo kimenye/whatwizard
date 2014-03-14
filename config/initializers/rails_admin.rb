@@ -43,7 +43,8 @@ RailsAdmin.config do |config|
         field :next_step
         field :expected_answer        
         field :wrong_answer
-        field :allow_continue
+        field :rebound
+        field :allow_continue        
       end
 
       list do
@@ -54,6 +55,7 @@ RailsAdmin.config do |config|
         field :expected_answer
         field :wrong_answer
         field :allow_continue
+        field :rebound
       end
     end
 
@@ -61,7 +63,15 @@ RailsAdmin.config do |config|
       list do
         field :step
         field :text
+        field :image
+        field :uploaded
       end 
+
+      edit do
+        field :text
+        field :step
+        field :image
+      end
     end
 
     config.model 'SystemResponse' do
@@ -90,7 +100,7 @@ RailsAdmin.config do |config|
       end
 
       register_instance_option :visible? do
-        bindings[:abstract_model].to_s == "SystemResponse"
+        bindings[:abstract_model].to_s == "SystemResponse" || bindings[:abstract_model].to_s == "Question"
       end      
 
       register_instance_option :http_methods do
@@ -106,9 +116,13 @@ RailsAdmin.config do |config|
               base_uri ENV['API_URL']  
             end
 
-            # get the response by id
-            response = SystemResponse.find_by_id(params[:id])
+            if params[:model_name] == "question"
+              response = Question.find_by_id(params[:id])
+            else
+              response = SystemResponse.find_by_id(params[:id])
+            end
             
+
             if !response.image.nil?
               result =  ImageUploader.post('/assets/', :query => { files: [File.new(response.image.path)]  }, :detect_mime_type => true,
                 :headers => { "Accept" => "application/json"})
@@ -118,7 +132,6 @@ RailsAdmin.config do |config|
             end
 
             redirect_to back_or_index, notice: "Image Uploaded"
-
           else
             render "upload_image"
           end
