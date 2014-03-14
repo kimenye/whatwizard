@@ -76,7 +76,7 @@ class HomeControllerTest < ActionController::TestCase
 
   test "It should advance the progress to the next step if the user opts-in" do
   	next_step = Step.create! name: "Heineken Consumer", step_type: "yes-no", order_index: 1
- 	  opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, next_step_id: next_step.id, expected_answer: "Yes, Yea, Ndio"
+ 	  opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, next_step_id: next_step.id, expected_answer: "Yes, Yea, Ndio", wrong_answer: "no"
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
   	next_qn = Question.create! text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", step_id: next_step.id
 
@@ -152,7 +152,7 @@ class HomeControllerTest < ActionController::TestCase
   test "It should progress a person to the next step question if it is a yes no question and they answer with no but the step is marked as can allow to continue" do
     next_step = Step.create! name: "Collect Serial", step_type: "serial", order_index: 1, expected_answer: "/d{13}/"
     question = Question.create! text: "In order to stand a chance to win a trip to Ibiza, send us the 13 digit code on the side of your bottle. The more you enter the better your chances of winning.", step_id: next_step.id
-    step = Step.create! name: "Customer", step_type: "yes-no", order_index: 0, expected_answer: "yes, yeah, offcourse, sometimes", next_step_id: next_step.id, allow_continue: true
+    step = Step.create! name: "Customer", step_type: "yes-no", order_index: 0, expected_answer: "yes, yeah, offcourse, sometimes", wrong_answer: "no", next_step_id: next_step.id, allow_continue: true
     valid = SystemResponse.create! text: "That's awesome. Super cool", step_id: step.id, response_type: "invalid"
 
 
@@ -169,7 +169,7 @@ class HomeControllerTest < ActionController::TestCase
   test "It should NOT progress a person to the next step question if it is a yes no question and they answer with no" do
   	next_step = Step.create! name: "Collect Serial", step_type: "serial", order_index: 1, expected_answer: "/d{13}/"
   	question = Question.create! text: "In order to stand a chance to win a trip to Ibiza, send us the 13 digit code on the side of your bottle. The more you enter the better your chances of winning.", step_id: next_step.id
-  	step = Step.create! name: "Customer", step_type: "yes-no", order_index: 0, expected_answer: "yes, yeah, offcourse, sometimes", next_step_id: next_step.id  	
+  	step = Step.create! name: "Customer", step_type: "yes-no", order_index: 0, expected_answer: "yes, yeah, offcourse, sometimes", next_step_id: next_step.id, wrong_answer: "no"  	
   	invalid = SystemResponse.create! text: "Sorry, only got time for serious chaps", step_id: step.id, response_type: "invalid"
 
 
@@ -198,5 +198,18 @@ class HomeControllerTest < ActionController::TestCase
     expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }]}
     assert_equal expected.to_json, response.body        
 
+  end
+
+  test "If a user provides an answer that is not part of what is expected then we should prompt them that we didn't undestand" do
+    next_step = Step.create! name: "Entry", step_type: "free-text", order_index: 1 
+    step = Step.create! name: "Campaign", step_type: "yes-no", order_index: 0, expected_answer: "yes", wrong_answer: "no"
+    first_question = Question.create! text: "So {{customer_name}}, are you ready to go to Lisbon to watch the UEFA Champions League final?"
+    unknown = SystemResponse.create! text: "Did't quite get that...", step_id: step.id, response_type: "unknown"
+
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    progress = Progress.create! step_id: step.id, contact_id: contact.id
+
+    post :wizard, { name: "dssd", phone_number: "254722778348", text: "go to hell!" }
+    assert_response :success
   end
 end

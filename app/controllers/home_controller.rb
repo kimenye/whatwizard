@@ -27,13 +27,25 @@ class HomeController < ApplicationController
   private
 
     def is_valid? step, value
+      matches?(step.expected_answer, value)
+    end
+
+    def matches? match, value
       matched = false
-      step.expected_answer.split(",").each do |ans|
+      match.split(",").each do |ans|
         if value.downcase == ans.strip.downcase
           matched = true
         end
       end
       matched
+    end
+
+    def is_invalid? step, value
+      matches?(step.wrong_answer, value)
+    end
+
+    def cant_understand? step, value
+      !is_invalid?(step,value) && !is_valid?(step, value) 
     end
 
     def personalize raw_text
@@ -113,12 +125,16 @@ class HomeController < ApplicationController
           if !step.next_step.nil?           
             responses << get_next_question(step.next_step, @contact)
           end
-        else
+        elsif is_invalid?(step, text)
           random = get_random_response(step, "invalid")
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: random.remote_asset_id  }
           if step.allow_continue
             responses << move_on(step)
           end
+        else
+          # cant understand
+          random = get_random_response(step, "unknown")
+          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: random.remote_asset_id  }
         end
         return responses
       end

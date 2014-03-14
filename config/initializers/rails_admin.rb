@@ -42,6 +42,7 @@ RailsAdmin.config do |config|
         field :order_index
         field :next_step
         field :expected_answer        
+        field :wrong_answer
         field :allow_continue
       end
 
@@ -51,6 +52,8 @@ RailsAdmin.config do |config|
         field :order_index
         field :next_step
         field :expected_answer
+        field :wrong_answer
+        field :allow_continue
       end
     end
 
@@ -69,6 +72,8 @@ RailsAdmin.config do |config|
         field :response_type  
         field :text
         field :image
+        field :uploaded
+        field :remote_asset_id
       end
 
       edit do 
