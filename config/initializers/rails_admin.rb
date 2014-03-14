@@ -4,7 +4,7 @@ RailsAdmin.config do |config|
 
   ## == Devise ==
   # config.authenticate_with do
-  #   warden.authenticate! scope: :user
+    # warden.authenticate! scope: :user
   # end
   # config.current_user_method(&:current_user)
 
@@ -15,6 +15,8 @@ RailsAdmin.config do |config|
   # config.audit_with :paper_trail, 'User', 'PaperTrail::Version' # PaperTrail >= 3.0.0
 
   ### More at https://github.com/sferik/rails_admin/wiki/Base-configuration
+
+  
 
   config.actions do
     dashboard                     # mandatory
@@ -40,11 +42,13 @@ RailsAdmin.config do |config|
         field :order_index
         field :next_step
         field :expected_answer        
+        field :allow_continue
       end
 
       list do
         field :name
         field :step_type
+        field :order_index
         field :next_step
         field :expected_answer
       end

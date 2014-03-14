@@ -1,6 +1,6 @@
 Whatwizard::Application.routes.draw do
   post "home/wizard"
-  mount RailsAdmin::Engine => '/admin', :as => :root
+  root to: 'rails_admin/main#dashboard'
+  mount RailsAdmin::Engine => '/admin'
   devise_for :users
-  # root :to => "/admin"
 end

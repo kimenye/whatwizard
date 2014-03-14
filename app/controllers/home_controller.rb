@@ -116,8 +116,19 @@ class HomeController < ApplicationController
         else
           random = get_random_response(step, "invalid")
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: random.remote_asset_id  }
+          if step.allow_continue
+            responses << move_on(step)
+          end
         end
         return responses
+      end
+    end
+
+    def move_on step
+      Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
+
+      if !step.next_step.nil?           
+        return get_next_question(step.next_step, @contact)
       end
     end
 
