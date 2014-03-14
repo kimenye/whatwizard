@@ -63,14 +63,13 @@ RailsAdmin.config do |config|
       list do
         field :step
         field :text
-        field :image
-        field :uploaded
+        field :media
       end 
 
       edit do
         field :text
         field :step
-        field :image
+        field :media
       end
     end
 
@@ -81,15 +80,26 @@ RailsAdmin.config do |config|
         field :step 
         field :response_type  
         field :text
-        field :image
-        field :uploaded
-        field :remote_asset_id
+        field :media
       end
 
       edit do 
         field :text
         field :response_type
         field :step
+        field :media
+      end
+    end
+
+    config.model 'Media' do
+      list do
+        field :name
+        field :image
+        field :uploaded
+      end
+
+      edit do
+        field :name
         field :image
       end
     end
@@ -100,7 +110,7 @@ RailsAdmin.config do |config|
       end
 
       register_instance_option :visible? do
-        bindings[:abstract_model].to_s == "SystemResponse" || bindings[:abstract_model].to_s == "Question"
+        bindings[:abstract_model].to_s == "Media"
       end      
 
       register_instance_option :http_methods do
@@ -115,13 +125,8 @@ RailsAdmin.config do |config|
               include HTTMultiParty
               base_uri ENV['API_URL']  
             end
-
-            if params[:model_name] == "question"
-              response = Question.find_by_id(params[:id])
-            else
-              response = SystemResponse.find_by_id(params[:id])
-            end
             
+            response = Media.find_by_id(params[:id])          
 
             if !response.image.nil?
               result =  ImageUploader.post('/assets/', :query => { files: [File.new(response.image.path)]  }, :detect_mime_type => true,

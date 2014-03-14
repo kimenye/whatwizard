@@ -132,6 +132,21 @@ class HomeControllerTest < ActionController::TestCase
   	assert_equal expected.to_json, response.body  	
   end
 
+  test "It should NOT accept the test serial number" do
+    next_step = Step.create! name: "Collect Serial", step_type: "serial", order_index: 1, expected_answer: '\d{13}', wrong_answer: "8712000900205"    
+    fake = SystemResponse.create! text: "LOL! That's my production code. Please enter yours when you next enjoy a Heineken", step_id: next_step.id, response_type: "fake"
+  
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    progress = Progress.create! step_id: next_step.id, contact_id: contact.id
+
+
+    post :wizard, { name: "dssd", phone_number: "254722778348", text: "8712000900205" }
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: fake.text, phone_number: "254722778348", image_id: nil }] }
+    assert_equal expected.to_json, response.body    
+  end
+
   test "It should progress a person to the next step question if it is a yes no question and they answer with yes" do
   	next_step = Step.create! name: "Collect Serial", step_type: "serial", order_index: 1, expected_answer: "/d{13}/"
   	question = Question.create! text: "In order to stand a chance to win a trip to Ibiza, send us the 13 digit code on the side of your bottle. The more you enter the better your chances of winning.", step_id: next_step.id

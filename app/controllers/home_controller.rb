@@ -24,9 +24,10 @@ class HomeController < ApplicationController
       current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
       if !current_progress.nil?
         random_response = get_random_response(current_progress.step, "multimedia")
-        responses = [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: random_response.remote_asset_id  }]
+        responses = [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }]
         
         if !current_progress.step.next_step.nil?
+          Progress.create! step_id: current_progress.step.next_step_id, contact_id: @contact.id  
           responses << get_next_question(current_progress.step.next_step, @contact)
         end
 
@@ -64,6 +65,10 @@ class HomeController < ApplicationController
       matches?(step.wrong_answer, value)
     end
 
+    def is_fake? step, value
+      matches?(step.wrong_answer, value)
+    end
+
     def cant_understand? step, value
       !is_invalid?(step,value) && !is_valid?(step, value) 
     end
@@ -90,12 +95,12 @@ class HomeController < ApplicationController
           if !step.next_step.nil?
             random_question = get_random(Step.find(step.next_step).questions)
             if !random_question.nil?              
-              return [{ type: "Question", text: personalize(random_question.text), phone_number: @contact.phone_number, image_id: random_question.remote_asset_id }]
+              return [{ type: "Question", text: personalize(random_question.text), phone_number: @contact.phone_number, image_id: (!random_question.media.nil? ? random_question.media.remote_asset_id : nil) }]
             end
           end
         else
           random_response = get_random(SystemResponse.where(step_id: step.id))
-          return [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: random_response.remote_asset_id  }]    
+          return [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }]    
         end
       elsif step.step_type == "numeric"
         # need to handle if we don't understand what the user has entered
@@ -108,10 +113,9 @@ class HomeController < ApplicationController
         else
           possible_responses = SystemResponse.where(step_id: step.id, response_type: "more_than")
         end
-        
-        
+                
         random_response = get_random(possible_responses)
-        responses = [ {type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: random_response.remote_asset_id }]
+        responses = [ {type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }]
         
         if !step.next_step.nil?
           Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
@@ -123,15 +127,33 @@ class HomeController < ApplicationController
         value = text.to_s
         r = Regexp.new(step.expected_answer)
         type = (r =~ value) ? "valid" : "invalid"
+        valid = type == "valid"
+        fake = is_fake?(step, text)
+        type = "fake" if fake
+
+        random_response = get_random_response(step, type)  
+        responses = [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }]
         
-        random_response = get_random_response(step, type)
-        return [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: random_response.remote_asset_id  }]
+        if valid && !fake
+          if !step.next_step.nil?
+            Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
+            responses << get_next_question(step.next_step, @contact)
+          end
+        end
+                
+        return responses
       elsif step.step_type == "free-text"
 
-        random_response = get_random_response(step, nil)
-        responses = [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number,image_id: random_response.remote_asset_id  }]
+        random_response = get_random_response(step, "valid")
+        responses = [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number,image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)   }]
         if !step.next_step.nil?
           responses << get_next_question(step.next_step, @contact)
+        else
+          # send the final response
+          random_response = get_random_response(step, "final")  
+          if !random_response.nil?
+            responses << { type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }
+          end
         end
         return responses
       else
@@ -139,24 +161,24 @@ class HomeController < ApplicationController
         responses = []
         if is_valid?(step, text)
           random = get_random_response(step, "valid")
-          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number,image_id: random.remote_asset_id  }
+          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number,image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }
           Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
           if !step.next_step.nil?           
             responses << get_next_question(step.next_step, @contact)
           end
         elsif is_invalid?(step, text)
           random = get_random_response(step, "invalid")
-          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: random.remote_asset_id  }
+          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }
           if step.allow_continue
             responses << move_on(step)
           end
         elsif is_rebound?(step, text)          
           random = get_random_response(step, "rebound")
-          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: random.remote_asset_id  }              
+          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }              
         else
           # cant understand
           random = get_random_response(step, "unknown")
-          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: random.remote_asset_id  }
+          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }
         end
         return responses
       end
@@ -181,7 +203,7 @@ class HomeController < ApplicationController
     def get_next_question step, contact
       random_question = get_random(Step.find(step).questions)
       if !random_question.nil?
-        return { type: "Question", text: personalize(random_question.text), phone_number: contact.phone_number, image_id: random_question.remote_asset_id }
+        return { type: "Question", text: personalize(random_question.text), phone_number: contact.phone_number, image_id: (!random_question.media.nil? ? random_question.media.remote_asset_id : nil) }
       end
     end
 

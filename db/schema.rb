@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140314150251) do
+ActiveRecord::Schema.define(version: 20140314172827) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -19,6 +19,17 @@ ActiveRecord::Schema.define(version: 20140314150251) do
     t.boolean  "opted_in"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "media", force: true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "image_file_name"
+    t.string   "image_content_type"
+    t.integer  "image_file_size"
+    t.datetime "image_updated_at"
+    t.integer  "remote_asset_id"
   end
 
   create_table "progresses", force: true do |t|
@@ -41,8 +52,10 @@ ActiveRecord::Schema.define(version: 20140314150251) do
     t.integer  "image_file_size"
     t.datetime "image_updated_at"
     t.integer  "remote_asset_id"
+    t.integer  "media_id"
   end
 
+  add_index "questions", ["media_id"], name: "index_questions_on_media_id"
   add_index "questions", ["step_id"], name: "index_questions_on_step_id"
 
   create_table "steps", force: true do |t|
@@ -72,8 +85,10 @@ ActiveRecord::Schema.define(version: 20140314150251) do
     t.integer  "image_file_size"
     t.datetime "image_updated_at"
     t.integer  "remote_asset_id"
+    t.integer  "media_id"
   end
 
+  add_index "system_responses", ["media_id"], name: "index_system_responses_on_media_id"
   add_index "system_responses", ["step_id"], name: "index_system_responses_on_step_id"
 
   create_table "users", force: true do |t|
