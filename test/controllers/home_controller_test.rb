@@ -17,7 +17,7 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal false, contact.nil?    
   end
 
-  test "Normal opt-in rules should apply after reset" do
+  test "Reset deletes the message and asks the user to text in Heineken" do
     next_step = Step.create! name: "Heineken Consumer", step_type: "yes-no", order_index: 1
     opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, yeah", wrong_answer: "No, no!, I'm not", next_step_id: next_step.id
     qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
@@ -33,6 +33,12 @@ class HomeControllerTest < ActionController::TestCase
     contact = Contact.find_by_phone_number("254722778348") 
     assert_equal false, contact.nil?    
     assert_equal true, contact.opted_in
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yoda"}
+    assert_response :success
+
+    contact = Contact.find_by_phone_number("254722778348") 
+    assert_equal true, contact.nil?    
   end
 
   test "It should send a question from the first step if a contact has not engaged with the system before" do

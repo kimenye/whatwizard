@@ -15,10 +15,10 @@ class HomeController < ApplicationController
           render :json => { response: response }
         end
       else
-        @contact.opted_in = nil
-        @contact.save!
+        number = @contact.phone_number
         Progress.where(contact_id: @contact.id).destroy_all
-        render json: { response: [ start.first ] }
+        Contact.delete_all
+        render json: { response: [ { type: "Response", text: "Type Heineken to restart", phone_number: number, image_id: nil } ] }
       end
     else      
       current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
