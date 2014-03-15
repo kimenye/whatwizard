@@ -17,6 +17,24 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal false, contact.nil?    
   end
 
+  test "Normal opt-in rules should apply after reset" do
+    next_step = Step.create! name: "Heineken Consumer", step_type: "yes-no", order_index: 1
+    opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, yeah", wrong_answer: "No, no!, I'm not", next_step_id: next_step.id
+    qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
+    assert_response :success
+
+    expected = { response: [{ type: "Question", text: "Niaje dsfsdf! Before we continue, are you over 18. Please reply with Yes or No.", phone_number: "254722778348" }] }
+    assert_equal expected.to_json, response.body
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yes"}
+    assert_response :success
+
+    contact = Contact.find_by_phone_number("254722778348") 
+    assert_equal false, contact.nil?    
+    assert_equal true, contact.opted_in
+  end
+
   test "It should send a question from the first step if a contact has not engaged with the system before" do
   	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
@@ -202,7 +220,7 @@ class HomeControllerTest < ActionController::TestCase
     step = Step.create! name: "Man of the World", step_type: "free-text", order_index: 0, expected_answer: ""
     question = Question.create! text: "Why are you a man of the world?", step_id: step.id
 
-    valid = SystemResponse.create! text: "Mmh. Humility is not one of your strengths.", step_id: step.id
+    valid = SystemResponse.create! text: "Mmh. Humility is not one of your strengths.", step_id: step.id, response_type: "valid"
 
     contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
     progress = Progress.create! step_id: step.id, contact_id: contact.id
