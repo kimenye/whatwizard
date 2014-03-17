@@ -11,4 +11,8 @@ class Step < ActiveRecord::Base
   def step_type_enum
   	[['Opt In', 'opt-in'], ['Yes or No', 'yes-no'], ['Numeric', 'numeric'], ['Entry', 'serial'], ['Free Text', 'free-text']]
   end
+
+  def action_enum
+    [['Add to List', 'add-to-list']]
+  end
 end

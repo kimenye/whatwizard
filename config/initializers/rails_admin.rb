@@ -44,7 +44,8 @@ RailsAdmin.config do |config|
         field :expected_answer        
         field :wrong_answer
         field :rebound
-        field :allow_continue        
+        field :allow_continue  
+        field :action      
       end
 
       list do

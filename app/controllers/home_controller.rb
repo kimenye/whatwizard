@@ -169,12 +169,14 @@ class HomeController < ApplicationController
         responses = []
         if is_valid?(step, text)
           random = get_random_response(step, "valid")
-          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number,image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }
+          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number,image_id: (!random.media.nil? ? random.media.remote_asset_id : nil), action: step.action   }
           Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
           if !step.next_step.nil?           
             responses << get_next_question(step.next_step, @contact)
           else
-            responses << finish(step)
+            # responses << finish(step)
+            rsp = finish(step)
+            responses << rsp if !rsp.nil?
           end
         elsif is_invalid?(step, text)
           random = get_random_response(step, "invalid")

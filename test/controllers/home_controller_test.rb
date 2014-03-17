@@ -108,6 +108,20 @@ class HomeControllerTest < ActionController::TestCase
   	assert_equal expected.to_json, response.body
   end
 
+  test "It should perform an add to list action if the result is valid" do
+    opt_step = Step.create! name: "Opt-In", step_type: "yes-no", order_index: 0, expected_answer: "Yes", wrong_answer: "No", action: "add-to-list"
+    SystemResponse.create! text: "Cool!", step_id: opt_step.id, response_type: "valid"
+    
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    progress = Progress.create! step_id: opt_step.id, contact_id: contact.id
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yes"}
+    assert_response :success 
+
+    expected = { response: [{ type: "Response", text: "Cool!", phone_number: "254722778348", image_id: nil, action: "add-to-list" }] }
+    assert_equal expected.to_json, response.body   
+  end
+
   test "It should opt a contact in if the contact answers yes to an opt-in question" do
  	  opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, Yea, Ndio"
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
@@ -122,7 +136,7 @@ class HomeControllerTest < ActionController::TestCase
   	assert_equal true, contact.opted_in
   end
 
-    test "It should opt-out a contact if the contact answers no to an opt-in question" do
+  test "It should opt-out a contact if the contact answers no to an opt-in question" do
  	  opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, Yea, Ndio"
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
   	rsp = SystemResponse.create! text: "Grow up first", step_id: opt_in_step.id, response_type: "invalid"
@@ -235,7 +249,7 @@ class HomeControllerTest < ActionController::TestCase
   	post :wizard, { name: "dssd", phone_number: "254722778348", text: "yes" }
   	assert_response :success
 
-  	expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }, { type: "Question", text: question.text, phone_number: contact.phone_number, image_id: nil }]}
+  	expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil, action: nil }, { type: "Question", text: question.text, phone_number: contact.phone_number, image_id: nil }]}
   	assert_equal expected.to_json, response.body  	  	
   end
 

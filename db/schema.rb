@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140317132623) do
+ActiveRecord::Schema.define(version: 20140317182648) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -70,6 +70,7 @@ ActiveRecord::Schema.define(version: 20140317132623) do
     t.boolean  "allow_continue"
     t.text     "wrong_answer"
     t.text     "rebound"
+    t.string   "action"
   end
 
   add_index "steps", ["next_step_id"], name: "index_steps_on_next_step_id"
