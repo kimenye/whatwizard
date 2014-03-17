@@ -33,6 +33,14 @@ class HomeController < ApplicationController
         if !current_progress.step.next_step.nil?
           Progress.create! step_id: current_progress.step.next_step_id, contact_id: @contact.id  
           responses << get_next_question(current_progress.step.next_step, @contact)
+        else
+          # if there is nothing after this then finish
+          random_response = get_random_response(current_progress.step, "final")  
+          @contact.bot_complete = true
+          @contact.save!
+          if !random_response.nil?
+            responses << { type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }
+          end
         end
 
         render :json => { response: responses }
@@ -149,10 +157,10 @@ class HomeController < ApplicationController
                 
         return responses
       elsif step.step_type == "free-text"
-
         random_response = get_random_response(step, "valid")
         responses = [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number,image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)   }]
         if !step.next_step.nil?
+          Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
           responses << get_next_question(step.next_step, @contact)
         else
           # send the final response
