@@ -8,7 +8,7 @@ class HomeController < ApplicationController
         number = @contact.phone_number
         Progress.where(contact_id: @contact.id).destroy_all
         Contact.delete_all
-        render json: { response: [ { type: "Response", text: "Type Heineken to restart", phone_number: number, image_id: nil } ] }
+        render json: { response: [ { type: "Response", text: "Type #{ENV['RESTART_CODE']} to restart", phone_number: number, image_id: nil } ] }
       else
         if @contact.bot_complete
           render :json => { response: [] }        
@@ -173,6 +173,8 @@ class HomeController < ApplicationController
           Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
           if !step.next_step.nil?           
             responses << get_next_question(step.next_step, @contact)
+          else
+            responses << finish(step)
           end
         elsif is_invalid?(step, text)
           random = get_random_response(step, "invalid")
@@ -189,6 +191,15 @@ class HomeController < ApplicationController
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }
         end
         return responses
+      end
+    end
+
+    def finish step
+      random_response = get_random_response(step, "final")  
+      @contact.bot_complete = true
+      @contact.save!
+      if !random_response.nil?
+        return { type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }
       end
     end
 

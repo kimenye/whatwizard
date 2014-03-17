@@ -12,3 +12,5 @@ ADMIN_NAME: First User
 ADMIN_EMAIL: user@example.com
 ADMIN_PASSWORD: changeme
 API_URL: http://localhost:3000
+RESET_CODE: reset
+RESTART_CODE: NMG

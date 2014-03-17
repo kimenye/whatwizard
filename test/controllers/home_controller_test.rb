@@ -40,7 +40,7 @@ class HomeControllerTest < ActionController::TestCase
     expected = { response: [] }
     assert_equal expected.to_json, response.body 
 
-    post :wizard, { name: "dsfsdf", phone_number: "254722778348", text: "Yoda" }
+    post :wizard, { name: "dsfsdf", phone_number: "254722778348", text: ENV["RESET_CODE"] }
     assert_response :success
 
     contact = Contact.find_by_phone_number("254722778348") 
@@ -66,13 +66,13 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal false, contact.nil?    
     assert_equal true, contact.opted_in
 
-    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yoda"}
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: ENV["RESET_CODE"]}
     assert_response :success
 
     contact = Contact.find_by_phone_number("254722778348") 
     assert_equal true, contact.nil?
 
-    expected = { response: [{ type: "Response", text: "Type Heineken to restart", phone_number: "254722778348", image_id: nil }] }
+    expected = { response: [{ type: "Response", text: "Type #{ENV['RESTART_CODE']} to restart", phone_number: "254722778348", image_id: nil }] }
     assert_equal expected.to_json, response.body    
 
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken"}
