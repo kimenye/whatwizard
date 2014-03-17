@@ -17,10 +17,42 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal false, contact.nil?    
   end
 
+  test "When a user finishes the bot interaction they are marked as complete" do
+    final_step = Step.create! name: "Final", step_type: "free-text", order_index: 0
+    SystemResponse.create! text: "Thank you for your time", step_id: final_step.id, response_type: "final"
+    SystemResponse.create! text: "Awesome", step_id: final_step.id, response_type: "valid"
+
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    progress = Progress.create! step_id: final_step.id, contact_id: contact.id
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: "Awesome", phone_number: "254722778348", image_id: nil }, { type: "Response", text: "Thank you for your time", phone_number: "254722778348", image_id: nil }] }
+    assert_equal expected.to_json, response.body    
+
+    contact = Contact.find_by_phone_number("254722778348") 
+    assert_equal true, contact.bot_complete 
+
+    post :wizard, { name: "dsfsdf", phone_number: "254722778348", text: "So, what happens next?" }
+    assert_response :success
+
+    expected = { response: [] }
+    assert_equal expected.to_json, response.body 
+
+    post :wizard, { name: "dsfsdf", phone_number: "254722778348", text: "Yoda" }
+    assert_response :success
+
+    contact = Contact.find_by_phone_number("254722778348") 
+    assert_equal true, contact.nil?    
+  end
+
   test "Reset deletes the message and asks the user to text in Heineken" do
     next_step = Step.create! name: "Heineken Consumer", step_type: "yes-no", order_index: 1
     opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, yeah", wrong_answer: "No, no!, I'm not", next_step_id: next_step.id
     qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
+    rsp = SystemResponse.create! text: "Sorry only 18 and over", response_type: "invalid", step_id: opt_in_step.id
+    SystemResponse.create! text: "Karibu", response_type: "valid", step_id: opt_in_step.id
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
     assert_response :success
 
@@ -38,7 +70,26 @@ class HomeControllerTest < ActionController::TestCase
     assert_response :success
 
     contact = Contact.find_by_phone_number("254722778348") 
-    assert_equal true, contact.nil?    
+    assert_equal true, contact.nil?
+
+    expected = { response: [{ type: "Response", text: "Type Heineken to restart", phone_number: "254722778348", image_id: nil }] }
+    assert_equal expected.to_json, response.body    
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken"}
+    assert_response :success
+
+    contact = Contact.find_by_phone_number("254722778348") 
+    assert_equal false, contact.nil?
+    assert_equal nil, contact.opted_in
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "No"}
+    assert_response :success  
+
+    contact = Contact.find_by_phone_number("254722778348") 
+    assert_equal false, contact.opted_in
+
+    expected = { response: [{ type: "Response", text: "Sorry only 18 and over", phone_number: "254722778348", image_id: nil }] }
+    assert_equal expected.to_json, response.body   
   end
 
   test "It should send a question from the first step if a contact has not engaged with the system before" do
@@ -74,7 +125,7 @@ class HomeControllerTest < ActionController::TestCase
     test "It should opt-out a contact if the contact answers no to an opt-in question" do
  	  opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, Yea, Ndio"
   	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
-  	rsp = SystemResponse.create! text: "Grow up first", step_id: opt_in_step.id
+  	rsp = SystemResponse.create! text: "Grow up first", step_id: opt_in_step.id, response_type: "invalid"
 
 	  post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
   	assert_response :success

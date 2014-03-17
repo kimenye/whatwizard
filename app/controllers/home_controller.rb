@@ -3,24 +3,28 @@ class HomeController < ApplicationController
   before_action :set_contact, only: [:wizard]
 
   def wizard
-    if params.has_key?(:text) 
-      if params[:text].downcase != ENV['RESET_CODE'].downcase
-        current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
-        if current_progress.nil?
-          # start the steps
-          response = start
-          render :json => { response: response } 
-        else
-          response = progress_step(current_progress, params[:text])
-          render :json => { response: response }
-        end
-      else
+    if params.has_key?(:text)
+      if params[:text].downcase == ENV['RESET_CODE'].downcase
         number = @contact.phone_number
         Progress.where(contact_id: @contact.id).destroy_all
         Contact.delete_all
         render json: { response: [ { type: "Response", text: "Type Heineken to restart", phone_number: number, image_id: nil } ] }
+      else
+        if @contact.bot_complete
+          render :json => { response: [] }        
+        else
+          current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+          if current_progress.nil?
+            # start the steps
+            response = start
+            render :json => { response: response } 
+          else
+            response = progress_step(current_progress, params[:text])
+            render :json => { response: response }
+          end
+        end
       end
-    else      
+    elsif !params.has_key?(:text) && !@contact.bot_complete      
       current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
       if !current_progress.nil?
         random_response = get_random_response(current_progress.step, "multimedia")
@@ -36,6 +40,8 @@ class HomeController < ApplicationController
         response = start
         render :json => { response: response }     
       end
+    else
+      render :json => { response: [] }
     end
   end
 
@@ -99,7 +105,7 @@ class HomeController < ApplicationController
             end
           end
         else
-          random_response = get_random(SystemResponse.where(step_id: step.id))
+          random_response = get_random(SystemResponse.where(step_id: step.id, response_type: "invalid"))
           return [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }]    
         end
       elsif step.step_type == "numeric"
@@ -151,6 +157,8 @@ class HomeController < ApplicationController
         else
           # send the final response
           random_response = get_random_response(step, "final")  
+          @contact.bot_complete = true
+          @contact.save!
           if !random_response.nil?
             responses << { type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }
           end
@@ -226,7 +234,7 @@ class HomeController < ApplicationController
     def set_contact
       @contact = Contact.find_by_phone_number(params[:phone_number])
       if @contact.nil?
-        @contact = Contact.create! phone_number: params[:phone_number], name: params[:name], opted_in: nil
+        @contact = Contact.create! phone_number: params[:phone_number], name: params[:name], opted_in: nil, bot_complete: false
       end
       @contact
     end

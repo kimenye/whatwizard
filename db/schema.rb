@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140314172827) do
+ActiveRecord::Schema.define(version: 20140317132623) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -19,6 +19,7 @@ ActiveRecord::Schema.define(version: 20140314172827) do
     t.boolean  "opted_in"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.boolean  "bot_complete"
   end
 
   create_table "media", force: true do |t|
