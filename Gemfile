@@ -14,6 +14,8 @@ gem 'haml-rails'
 gem 'rails_admin'
 gem 'paperclip'
 gem 'httmultiparty'
+gem 'unicorn'
+gem 'unicorn-rails'
 group :development do
   gem 'better_errors'
   gem 'binding_of_caller', :platforms=>[:mri_19, :mri_20, :rbx]
@@ -24,7 +26,6 @@ end
 
 group :production do
   gem 'mysql2'
-  gem 'unicorn'
 end
 
 gem 'minitest-rails'
