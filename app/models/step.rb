@@ -13,6 +13,6 @@ class Step < ActiveRecord::Base
   end
 
   def action_enum
-    [['Add to List', 'add-to-list']]
+    [['Add to List', 'add-to-list'], ['End Conversation', 'end-conversation']]
   end
 end
