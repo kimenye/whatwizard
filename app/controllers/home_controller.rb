@@ -92,6 +92,7 @@ class HomeController < ApplicationController
     end
 
     def progress_step progress, text
+      # binding.pry
       step = progress.step
       if step.step_type == "opt-in"
         # if it is an opt-in i.e. yes or no
@@ -105,13 +106,16 @@ class HomeController < ApplicationController
         if contact.opted_in
           # next_step = step.next_step
           Progress.create! step_id: step.next_step_id, contact_id: @contact.id
-          
+          responses = []
           if !step.next_step.nil?
             random_question = get_random(Step.find(step.next_step).questions)
             if !random_question.nil?              
-              return [{ type: "Question", text: personalize(random_question.text), phone_number: @contact.phone_number, image_id: (!random_question.media.nil? ? random_question.media.remote_asset_id : nil) }]
+              responses << { type: "Question", text: personalize(random_question.text), phone_number: @contact.phone_number, image_id: (!random_question.media.nil? ? random_question.media.remote_asset_id : nil) }
             end
           end
+
+          responses << action(step, "valid")
+          return responses
         else
           random_response = get_random(SystemResponse.where(step_id: step.id, response_type: "invalid"))
           return [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }]    
@@ -177,7 +181,8 @@ class HomeController < ApplicationController
         responses = []
         if is_valid?(step, text)
           random = get_random_response(step, "valid")
-          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number,image_id: (!random.media.nil? ? random.media.remote_asset_id : nil), action: step.action   }
+          responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number,image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)}
+          # if ()
           Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
           if !step.next_step.nil?           
             responses << get_next_question(step.next_step, @contact)
@@ -186,21 +191,32 @@ class HomeController < ApplicationController
             rsp = finish(step)
             responses << rsp if !rsp.nil?
           end
+          responses << action(step,"valid")
         elsif is_invalid?(step, text)
           random = get_random_response(step, "invalid")
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }
           if step.allow_continue
             responses << move_on(step)
           end
+          responses << action(step,"valid")
         elsif is_rebound?(step, text)          
           random = get_random_response(step, "rebound")
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }              
+          responses << action(step,"rebound")
         else
           # cant understand
           random = get_random_response(step, "unknown")
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }
+          responses << action(step,"unknown")
         end
         return responses
+      end
+    end
+
+    def action step, response_type
+      action = Action.where(step_id: step.id, response_type: response_type).first
+      if !action.nil?
+        return { type: "Action", name: action.name, action_type: action.action_type, parameters: action.parameters }
       end
     end
 
