@@ -20,7 +20,7 @@ class HomeController < ApplicationController
             render :json => { response: response } 
           else
             response = progress_step(current_progress, params[:text])
-            render :json => { response: response }
+            render :json => { response: remove_nil(response) }
           end
         end
       end
@@ -43,10 +43,10 @@ class HomeController < ApplicationController
           end
         end
 
-        render :json => { response: responses }
+        render :json => { response: remove_nil(responses) }
       else
         response = start
-        render :json => { response: response }     
+        render :json => { response: remove_nil(response) }     
       end
     else
       render :json => { response: [] }
@@ -54,6 +54,11 @@ class HomeController < ApplicationController
   end
 
   private
+
+    def remove_nil responses
+      responses.reject! { |r| r.nil? }
+      responses
+    end
 
     def is_valid? step, value
       matches?(step.expected_answer, value)
@@ -214,7 +219,7 @@ class HomeController < ApplicationController
     end
 
     def action step, response_type
-      action = Action.where(step_id: step.id, response_type: response_type).first
+      action = ResponseAction.where(step_id: step.id, response_type: response_type).first
       if !action.nil?
         return { type: "Action", name: action.name, action_type: action.action_type, parameters: action.parameters }
       end

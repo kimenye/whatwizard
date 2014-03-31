@@ -1,6 +1,6 @@
 class CreateActions < ActiveRecord::Migration
   def change
-    create_table :actions do |t|
+    create_table :response_actions do |t|
       t.string :name
       t.string :parameters
       t.string :action_type

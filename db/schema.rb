@@ -13,18 +13,6 @@
 
 ActiveRecord::Schema.define(version: 20140331141355) do
 
-  create_table "actions", force: true do |t|
-    t.string   "name"
-    t.string   "parameters"
-    t.string   "action_type"
-    t.string   "response_type"
-    t.integer  "step_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  add_index "actions", ["step_id"], name: "index_actions_on_step_id"
-
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
     t.string   "name"
@@ -70,6 +58,18 @@ ActiveRecord::Schema.define(version: 20140331141355) do
 
   add_index "questions", ["media_id"], name: "index_questions_on_media_id"
   add_index "questions", ["step_id"], name: "index_questions_on_step_id"
+
+  create_table "response_actions", force: true do |t|
+    t.string   "name"
+    t.string   "parameters"
+    t.string   "action_type"
+    t.string   "response_type"
+    t.integer  "step_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "response_actions", ["step_id"], name: "index_response_actions_on_step_id"
 
   create_table "steps", force: true do |t|
     t.string   "name"

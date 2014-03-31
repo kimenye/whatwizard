@@ -74,6 +74,23 @@ RailsAdmin.config do |config|
       end
     end
 
+    config.model 'ResponseAction' do
+      label 'Action'
+      
+      list do
+        field :name
+        field :step
+      end
+
+      edit do
+        field :name
+        field :step
+        field :parameters
+        field :action_type
+        field :response_type
+      end
+    end
+
     config.model 'SystemResponse' do
       label 'Response' 
 
