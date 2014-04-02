@@ -206,7 +206,7 @@ class HomeController < ApplicationController
             responses << move_on(step)
           end
           responses << action(step,"invalid")
-        elsif is_rebound?(step, text)          
+        elsif is_rebound?(step, text)        
           random = get_random_response(step, "rebound")
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }              
           responses << action(step,"rebound")

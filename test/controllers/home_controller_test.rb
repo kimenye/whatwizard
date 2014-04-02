@@ -32,6 +32,38 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal expected.to_json, response.body  
   end
 
+  test "A test can have more than one action especially if it is a rebound" do
+    next_step = Step.create! name: "Final", step_type: "free-text", order_index: 1
+    prompt = Question.create! text: "Why should you win this?", step_id: next_step.id
+    step = Step.create! name: "Customer", step_type: "yes-no", order_index: 0, expected_answer: "yes", wrong_answer: "no", rebound: "Heineken", next_step_id: next_step.id
+    action = ResponseAction.create! name: "Not a customer", step_id: step.id, action_type: "add-to-list", parameters: "Non-Customers", response_type: "invalid"
+    removeAction = ResponseAction.create! name: "Rebound customer", step_id: step.id, action_type: "remove-from-list", parameters: "Non-Customers", response_type: "valid"
+    invalid = SystemResponse.create! text: "Too bad", step_id: step.id, response_type: "invalid"
+    valid = SystemResponse.create! text: "Cool", step_id: step.id, response_type: "valid"
+    rebound = SystemResponse.create! text: "Good to hear from you again. Did you enjoy a world-class Heineken since last time?", step_id: step.id, response_type: "rebound"
+
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    progress = Progress.create! step_id: step.id, contact_id: contact.id
+
+    post :wizard, { name: "dssd", phone_number: "254722778348", text: "no" }
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: "Too bad", phone_number: "254722778348", image_id: nil }, { type: "Action", name: "Not a customer", action_type: "add-to-list", parameters: "Non-Customers" }] }
+    assert_equal expected.to_json, response.body    
+
+    post :wizard, { name: "dssd", phone_number: "254722778348", text: "Heineken"}
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: rebound.text, phone_number: "254722778348", image_id: nil }]}
+    assert_equal expected.to_json, response.body  
+
+    post :wizard, { name: "dssd", phone_number: "254722778348", text: "yes"}
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil}, { type: 'Question', text: prompt.text, phone_number: "254722778348", image_id: nil }, { type: "Action", name: removeAction.name, action_type: removeAction.action_type, parameters: removeAction.parameters }] }
+    assert_equal expected.to_json, response.body    
+  end
+
   test "When a user finishes the bot interaction they are marked as complete" do
     final_step = Step.create! name: "Final", step_type: "free-text", order_index: 0
     SystemResponse.create! text: "Thank you for your time", step_id: final_step.id, response_type: "final"
