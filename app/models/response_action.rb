@@ -6,6 +6,6 @@ class ResponseAction < ActiveRecord::Base
   end
 
   def action_type_enum
-  	[['Add to List', 'add-to-list'], ['End Conversation', 'end-conversation']]
+  	[['Add to List', 'add-to-list'], ['End Conversation', 'end-conversation'], ['Remove from List', 'remove-from-list']]
   end
 end

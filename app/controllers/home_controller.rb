@@ -123,7 +123,9 @@ class HomeController < ApplicationController
           return responses
         else
           random_response = get_random(SystemResponse.where(step_id: step.id, response_type: "invalid"))
-          return [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }]    
+          responses = [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }]
+          responses << action(step, "invalid")
+          return responses
         end
       elsif step.step_type == "numeric"
         # need to handle if we don't understand what the user has entered
@@ -203,7 +205,7 @@ class HomeController < ApplicationController
           if step.allow_continue
             responses << move_on(step)
           end
-          responses << action(step,"valid")
+          responses << action(step,"invalid")
         elsif is_rebound?(step, text)          
           random = get_random_response(step, "rebound")
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }              

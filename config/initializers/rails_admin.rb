@@ -45,7 +45,7 @@ RailsAdmin.config do |config|
         field :wrong_answer
         field :rebound
         field :allow_continue  
-        field :action      
+        # field :action      
       end
 
       list do
@@ -80,6 +80,9 @@ RailsAdmin.config do |config|
       list do
         field :name
         field :step
+        field :action_type
+        field :response_type
+        field :parameters
       end
 
       edit do
