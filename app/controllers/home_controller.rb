@@ -42,7 +42,7 @@ class HomeController < ApplicationController
           if !random_response.nil?
             responses << { type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }
           end
-          add_actions(responses, current_progress.step, "final")
+          # add_actions(responses, current_progress.step, "final")
           add_actions(responses, current_progress.step, "valid")
         end
 
@@ -185,6 +185,7 @@ class HomeController < ApplicationController
           if !random_response.nil?
             responses << { type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }
           end
+          add_actions(responses, step, "final")
         end
         return responses
       else
