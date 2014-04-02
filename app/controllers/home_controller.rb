@@ -33,6 +33,7 @@ class HomeController < ApplicationController
         if !current_progress.step.next_step.nil?
           Progress.create! step_id: current_progress.step.next_step_id, contact_id: @contact.id  
           responses << get_next_question(current_progress.step.next_step, @contact)
+          add_actions(responses, current_progress.step, "valid")
         else
           # if there is nothing after this then finish
           random_response = get_random_response(current_progress.step, "final")  
@@ -41,6 +42,8 @@ class HomeController < ApplicationController
           if !random_response.nil?
             responses << { type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }
           end
+          add_actions(responses, current_progress.step, "final")
+          add_actions(responses, current_progress.step, "valid")
         end
 
         render :json => { response: remove_nil(responses) }
@@ -119,12 +122,12 @@ class HomeController < ApplicationController
             end
           end
 
-          responses << action(step, "valid")
+          add_actions(responses, step, "valid")
           return responses
         else
           random_response = get_random(SystemResponse.where(step_id: step.id, response_type: "invalid"))
           responses = [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }]
-          responses << action(step, "invalid")
+          add_actions(responses, step, "invalid")
           return responses
         end
       elsif step.step_type == "numeric"
@@ -158,11 +161,12 @@ class HomeController < ApplicationController
 
         random_response = get_random_response(step, type)  
         responses = [{ type: "Response", text: personalize(random_response.text), phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil)  }]
-        
+        add_actions(responses,step,type)
+
         if valid && !fake
           if !step.next_step.nil?
             Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
-            responses << get_next_question(step.next_step, @contact)
+            responses << get_next_question(step.next_step, @contact)            
           end
         end
                 
@@ -198,33 +202,34 @@ class HomeController < ApplicationController
             rsp = finish(step)
             responses << rsp if !rsp.nil?
           end
-          responses << action(step,"valid")
+          add_actions(responses, step,"valid")
         elsif is_invalid?(step, text)
           random = get_random_response(step, "invalid")
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }
           if step.allow_continue
             responses << move_on(step)
           end
-          responses << action(step,"invalid")
+          add_actions(responses, step,"invalid")
         elsif is_rebound?(step, text)        
           random = get_random_response(step, "rebound")
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }              
-          responses << action(step,"rebound")
+          add_actions(responses,step,"rebound")
         else
           # cant understand
           random = get_random_response(step, "unknown")
           responses << { type: "Response", text: personalize(random.text), phone_number: @contact.phone_number, image_id: (!random.media.nil? ? random.media.remote_asset_id : nil)   }
-          responses << action(step,"unknown")
+          add_actions(responses, step,"unknown")
         end
         return responses
       end
     end
 
-    def action step, response_type
-      action = ResponseAction.where(step_id: step.id, response_type: response_type).first
-      if !action.nil?
-        return { type: "Action", name: action.name, action_type: action.action_type, parameters: action.parameters }
+    def add_actions responses, step, response_type
+      actions = ResponseAction.where(step_id: step.id, response_type: response_type)
+      actions.each do |action|
+        responses << { type: "Action", name: action.name, action_type: action.action_type, parameters: action.parameters }
       end
+      return responses
     end
 
     def finish step

@@ -3,7 +3,7 @@ class ResponseAction < ActiveRecord::Base
 
   def response_type_enum
   	# [['Valid','valid'], ['Invalid', 'invalid'], ['Final', 'final'], ['Rebound', 'rebound']]
-  	[['Valid','valid'], ['Invalid', 'invalid'], ['Final', 'final']]  	
+  	[['Valid','valid'], ['Invalid', 'invalid'], ['Final', 'final'], ['Unknown','unknown']]  	
   end
 
   def action_type_enum

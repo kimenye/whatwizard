@@ -64,6 +64,25 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal expected.to_json, response.body    
   end
 
+  test "A step can have more than one action" do
+    step = Step.create! name: "Customer", step_type: "yes-no", order_index: 0, expected_answer: "yes", wrong_answer: "no", rebound: "Heineken"
+    action = ResponseAction.create! name: "Not a customer", step_id: step.id, action_type: "add-to-list", parameters: "Non-Customers", response_type: "invalid"
+    endConversation = ResponseAction.create! name: "Rebound customer", step_id: step.id, action_type: "end-conversation", response_type: "invalid"
+    invalid = SystemResponse.create! text: "Too bad", step_id: step.id, response_type: "invalid"
+
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    progress = Progress.create! step_id: step.id, contact_id: contact.id
+
+    post :wizard, { name: "dssd", phone_number: "254722778348", text: "no" }
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: invalid.text, phone_number: "254722778348", image_id: nil}, 
+        { type: "Action", name: action.name, action_type: action.action_type, parameters: action.parameters },
+        { type: "Action", name: endConversation.name, action_type: endConversation.action_type, parameters: endConversation.parameters }] }
+
+    assert_equal expected.to_json, response.body
+  end
+
   test "When a user finishes the bot interaction they are marked as complete" do
     final_step = Step.create! name: "Final", step_type: "free-text", order_index: 0
     SystemResponse.create! text: "Thank you for your time", step_id: final_step.id, response_type: "final"
