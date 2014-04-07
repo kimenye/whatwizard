@@ -113,6 +113,30 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal true, contact.nil?    
   end
 
+  test "When a user sends a message after they are marked as complete they get the autoresponder message" do
+    final_step = Step.create! name: "Final", step_type: "opt-in", order_index: 0, expected_answer: "yes", wrong_answer: "no"
+    SystemResponse.create! text: "Awesome", step_id: final_step.id, response_type: "valid"
+    SystemResponse.create! text: "Please just chill", step_id: final_step.id, response_type: "end"
+
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: nil
+    progress = Progress.create! step_id: final_step.id, contact_id: contact.id
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "yes"}
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: "Awesome", phone_number: "254722778348", image_id: nil }] }
+    assert_equal expected.to_json, response.body    
+
+    contact = Contact.find_by_phone_number("254722778348") 
+    assert_equal true, contact.bot_complete 
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "What is?"}
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: "Please just chill", phone_number: "254722778348", image_id: nil }] }
+    assert_equal expected.to_json, response.body
+  end
+
   test "Reset deletes the message and asks the user to text in Heineken" do
     next_step = Step.create! name: "Heineken Consumer", step_type: "yes-no", order_index: 1
     opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, yeah", wrong_answer: "No, no!, I'm not", next_step_id: next_step.id

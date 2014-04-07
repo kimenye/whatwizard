@@ -117,11 +117,13 @@ RailsAdmin.config do |config|
         field :name
         field :image
         field :uploaded
+        field :remote_asset_id
       end
 
       edit do
         field :name
         field :image
+        field :remote_asset_id
       end
     end
 

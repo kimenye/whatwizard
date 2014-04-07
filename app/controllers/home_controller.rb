@@ -10,10 +10,16 @@ class HomeController < ApplicationController
         Contact.delete_all
         render json: { response: [ { type: "Response", text: "Type #{ENV['RESTART_CODE']} to restart", phone_number: number, image_id: nil } ] }
       else
-        if @contact.bot_complete
-          render :json => { response: [] }        
+        current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+        if @contact.bot_complete          
+          random_response = get_random_response(current_progress.step, "end")
+          responses = []
+          if !random_response.nil?
+            responses << { type: "Response", text: random_response.text, phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil) }
+          end
+          render :json => { response: responses }        
         else
-          current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+          
           if current_progress.nil?
             # start the steps
             response = start
@@ -113,13 +119,24 @@ class HomeController < ApplicationController
 
         if contact.opted_in
           # next_step = step.next_step
-          Progress.create! step_id: step.next_step_id, contact_id: @contact.id
+          if !step.next_step.nil?
+            Progress.create! step_id: step.next_step_id, contact_id: @contact.id
+          end
           responses = []
+          
+          random_response = get_random_response(step, "valid")
+          if !random_response.nil?
+            responses << { type: "Response", text: random_response.text, phone_number: @contact.phone_number, image_id: (!random_response.media.nil? ? random_response.media.remote_asset_id : nil) }
+          end
+
           if !step.next_step.nil?
             random_question = get_random(Step.find(step.next_step).questions)
             if !random_question.nil?              
               responses << { type: "Question", text: personalize(random_question.text), phone_number: @contact.phone_number, image_id: (!random_question.media.nil? ? random_question.media.remote_asset_id : nil) }
             end
+          else
+            contact.bot_complete = true
+            contact.save!
           end
 
           add_actions(responses, step, "valid")
