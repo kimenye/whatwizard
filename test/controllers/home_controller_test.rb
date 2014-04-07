@@ -261,7 +261,7 @@ class HomeControllerTest < ActionController::TestCase
   end
 
   test "It should accept a valid serial number based on the response" do
-  	next_step = Step.create! name: "Collect Serial", step_type: "serial", order_index: 1, expected_answer: '\d{13}'
+  	next_step = Step.create! name: "Collect Serial", step_type: "serial", order_index: 1, expected_answer: '[(3|4)][(0|1|2|3)]\d{5}[a-zA-Z][(0|1|2|3)]\d{3}'
 
   	valid = SystemResponse.create! text: "That's awesome. Super cool", step_id: next_step.id, response_type: "valid"
  	  equal = SystemResponse.create! text: "Sorry that's not a valid serial", step_id: next_step.id, response_type: "invalid"
@@ -270,7 +270,7 @@ class HomeControllerTest < ActionController::TestCase
   	progress = Progress.create! step_id: next_step.id, contact_id: contact.id
 
 
- 	  post :wizard, { name: "dssd", phone_number: "254722778348", text: "1234567890123" }
+ 	  post :wizard, { name: "dssd", phone_number: "254722778348", text: "3212345d3123" }
   	assert_response :success
 
 	  expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }] }
