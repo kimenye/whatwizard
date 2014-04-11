@@ -175,7 +175,7 @@ RailsAdmin.config do |config|
       end
 
       register_instance_option :visible? do
-        bindings[:abstract_model].to_s == "Contact"
+        bindings[:abstract_model].to_s == "Contact" || bindings[:abstract_model].to_s == "Player" 
       end
 
       register_instance_option :http_methods do
@@ -185,9 +185,8 @@ RailsAdmin.config do |config|
       register_instance_option :controller do
         Proc.new do
           if params.has_key?(:submit)
-            # count = RenewalService.send_renewals
-            # redirect_to back_or_index, notice: "#{count} Renewals sent"
             count = Contact.delete_all
+            Player.delete_all
             Progress.delete_all
             redirect_to back_or_index, notice: "#{count} Contacts reset"
           else
