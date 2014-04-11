@@ -10,4 +10,12 @@ class ApplicationController < ActionController::Base
   def personalize raw_text
     raw_text.gsub(/{{contact_name}}/, person.name)
   end
+
+	def get_random_response step, type
+	  if !type.nil?
+	    get_random(SystemResponse.where(step_id: step.id, response_type: type))
+	  else
+	    get_random(SystemResponse.where(step_id: step.id))
+	  end
+	end
 end

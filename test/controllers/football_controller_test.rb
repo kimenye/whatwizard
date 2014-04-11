@@ -43,10 +43,32 @@ class FootballControllerTest < ActionController::TestCase
 	test "It should repeat the menu if the user responds with a wrong menu option" do
 		player = Player.create! name: "Text", phone_number: @phone_number, subscribed: nil
 		Progress.create! player_id: player.id, step_id: @home.id
+		rsp = SystemResponse.create! step_id: @home.id, response_type: "invalid", text: "I didn't understand that. Please reply with one of the following options" 
 
-		post :wizard, {text: "What is this?", name: "Text", phone_number: @phone_number }
-		expected = { response: [{ type: "Response", text: "I didn't understand that. Please reply with one of the following options", phone_number: @phone_number }, { type: "Response", text: "#{@opt_a.key}. #{@opt_a.text}\r\n#{@opt_b.key}. #{@opt_b.text}", phone_number: @phone_number }]}
+		post :wizard, {text: "Aaaa", name: "Text", phone_number: @phone_number }
+		expected = { response: [{ type: "Response", text: rsp.text, phone_number: @phone_number }, { type: "Response", text: "#{@opt_a.key}. #{@opt_a.text}\r\n#{@opt_b.key}. #{@opt_b.text}", phone_number: @phone_number }]}
 		assert_equal expected.to_json, response.body
+	end
+
+	test "it should progress a user to the next step if the user responds with the right menu option" do
+		player = Player.create! name: "Text", phone_number: @phone_number, subscribed: nil
+		Progress.create! player_id: player.id, step_id: @home.id
+
+		my_team_step = Step.create! name: "My Team", step_type: "menu", order_index: 1
+		@opt_b.step_id = my_team_step.id
+		@opt_b.save!
+
+		teams = Menu.create! name: "Teams", step_id: my_team_step.id
+		team_question = Question.create! text: "Please select a team", step_id: my_team_step.id	
+		manu = Option.create! index: 0, key: "A", text: "Manchester United", menu_id: teams.id
+		arsenal = Option.create! index: 1, key: "B", text: "Arsenal", menu_id: teams.id
+
+		post :wizard, {text: "B", name: "Text", phone_number: @phone_number }
+		assert_response :success
+
+
+		expected = { response: [{ type: "Question", text: team_question.text, phone_number: @phone_number }, { type: "Response", text: "#{manu.key}. #{manu.text}\r\n#{arsenal.key}. #{arsenal.text}", phone_number: @phone_number }]}
+    	assert_equal expected.to_json, response.body
 	end
 
 end

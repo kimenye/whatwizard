@@ -267,14 +267,6 @@ class HomeController < ApplicationController
       end
     end
 
-    def get_random_response step, type
-      if !type.nil?
-        get_random(SystemResponse.where(step_id: step.id, response_type: type))
-      else
-        get_random(SystemResponse.where(step_id: step.id))
-      end
-    end
-
     def get_next_question step, contact
       random_question = get_random(Step.find(step).questions)
       if !random_question.nil?
