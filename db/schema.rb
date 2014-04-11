@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140411090533) do
+ActiveRecord::Schema.define(version: 20140411125328) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -46,6 +46,25 @@ ActiveRecord::Schema.define(version: 20140411090533) do
     t.integer  "remote_asset_id"
   end
 
+  create_table "menus", force: true do |t|
+    t.integer  "step_id"
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "options", force: true do |t|
+    t.integer  "index"
+    t.string   "text"
+    t.string   "key"
+    t.integer  "step_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "menu_id"
+  end
+
+  add_index "options", ["menu_id"], name: "index_options_on_menu_id"
+
   create_table "players", force: true do |t|
     t.string   "phone_number"
     t.string   "name"
@@ -75,9 +94,11 @@ ActiveRecord::Schema.define(version: 20140411090533) do
     t.integer  "step_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "player_id"
   end
 
   add_index "progresses", ["contact_id"], name: "index_progresses_on_contact_id"
+  add_index "progresses", ["player_id"], name: "index_progresses_on_player_id"
   add_index "progresses", ["step_id"], name: "index_progresses_on_step_id"
 
   create_table "questions", force: true do |t|

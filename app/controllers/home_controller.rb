@@ -294,10 +294,6 @@ class HomeController < ApplicationController
       end
     end
 
-    def get_random records
-      records[rand(records.length)]
-    end
-
     def set_contact
       @contact = Contact.find_by_phone_number(params[:phone_number])
       if @contact.nil?
