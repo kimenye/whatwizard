@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140331141355) do
+ActiveRecord::Schema.define(version: 20140411090533) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -21,6 +21,19 @@ ActiveRecord::Schema.define(version: 20140331141355) do
     t.datetime "updated_at"
     t.boolean  "bot_complete"
   end
+
+  create_table "matches", force: true do |t|
+    t.datetime "time"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.integer  "home_team_id"
+    t.integer  "away_team_id"
+    t.integer  "round_id"
+  end
+
+  add_index "matches", ["away_team_id"], name: "index_matches_on_away_team_id"
+  add_index "matches", ["home_team_id"], name: "index_matches_on_home_team_id"
+  add_index "matches", ["round_id"], name: "index_matches_on_round_id"
 
   create_table "media", force: true do |t|
     t.string   "name"
@@ -32,6 +45,30 @@ ActiveRecord::Schema.define(version: 20140331141355) do
     t.datetime "image_updated_at"
     t.integer  "remote_asset_id"
   end
+
+  create_table "players", force: true do |t|
+    t.string   "phone_number"
+    t.string   "name"
+    t.integer  "team_id"
+    t.boolean  "subscribed"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "players", ["team_id"], name: "index_players_on_team_id"
+
+  create_table "predictions", force: true do |t|
+    t.integer  "player_id"
+    t.integer  "match_id"
+    t.integer  "home_score"
+    t.integer  "away_score"
+    t.boolean  "confirmed"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "predictions", ["match_id"], name: "index_predictions_on_match_id"
+  add_index "predictions", ["player_id"], name: "index_predictions_on_player_id"
 
   create_table "progresses", force: true do |t|
     t.integer  "contact_id"
@@ -71,6 +108,22 @@ ActiveRecord::Schema.define(version: 20140331141355) do
 
   add_index "response_actions", ["step_id"], name: "index_response_actions_on_step_id"
 
+  create_table "results", force: true do |t|
+    t.integer  "match_id"
+    t.integer  "home_score"
+    t.integer  "away_score"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "results", ["match_id"], name: "index_results_on_match_id"
+
+  create_table "rounds", force: true do |t|
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "name"
+  end
+
   create_table "steps", force: true do |t|
     t.string   "name"
     t.string   "step_type"
@@ -104,6 +157,12 @@ ActiveRecord::Schema.define(version: 20140331141355) do
 
   add_index "system_responses", ["media_id"], name: "index_system_responses_on_media_id"
   add_index "system_responses", ["step_id"], name: "index_system_responses_on_step_id"
+
+  create_table "teams", force: true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "users", force: true do |t|
     t.string   "email",                  default: "", null: false
