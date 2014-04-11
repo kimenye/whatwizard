@@ -30,6 +30,7 @@ RailsAdmin.config do |config|
     show_in_app
 
     config.excluded_models << Progress
+    config.excluded_models << Media
 
     ## With an audit adapter, you can add:
     # history_index
@@ -64,13 +65,13 @@ RailsAdmin.config do |config|
       list do
         field :step
         field :text
-        field :media
+        # field :media
       end 
 
       edit do
         field :text
         field :step
-        field :media
+        # field :media
       end
     end
 
@@ -101,7 +102,7 @@ RailsAdmin.config do |config|
         field :step 
         field :response_type  
         field :text
-        field :media
+        # field :media
       end
 
       edit do 

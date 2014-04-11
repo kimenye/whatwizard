@@ -7,6 +7,6 @@ class ResponseAction < ActiveRecord::Base
   end
 
   def action_type_enum
-  	[['Add to List', 'add-to-list'], ['End Conversation', 'end-conversation'], ['Remove from List', 'remove-from-list']]
+  	[['Add to List', 'add-to-list'], ['End Conversation', 'end-conversation'], ['Remove from List', 'remove-from-list'], ['Send Image','send-image'], ['Send Audio', 'send-audio'], ['Send Video', 'send-video'], ['Send V-Card', 'send-v-card']]
   end
 end
