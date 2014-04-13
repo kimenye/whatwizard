@@ -62,12 +62,7 @@ class HomeController < ApplicationController
     end
   end
 
-  private
-
-    def remove_nil responses
-      responses.reject! { |r| r.nil? }
-      responses
-    end
+  private    
 
     def is_valid? step, value
       matches?(step.expected_answer, value)

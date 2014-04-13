@@ -18,4 +18,9 @@ class ApplicationController < ActionController::Base
 	    get_random(SystemResponse.where(step_id: step.id))
 	  end
 	end
+
+  def remove_nil responses
+    responses.reject! { |r| r.nil? }
+    responses
+  end
 end

@@ -12,7 +12,7 @@ class FootballController < ApplicationController
         responses = evaluate(current_progress)
       end
     end
-    render :json => { response: responses }
+    render :json => { response: remove_nil(responses) }
   end
 
   def evaluate current_progress
@@ -24,11 +24,72 @@ class FootballController < ApplicationController
         return [{ type: "Response", text: get_random_response(current_step, "invalid").text, phone_number: person.phone_number }, { type: "Response", text: options_text(menu), phone_number: person.phone_number } ]
       else
         option = get_valid_option(menu,params[:text])
-        current_step = option.step
-        question = get_random(current_step.questions)
-        Progress.create! step_id: current_step.id, player_id: person.id, contact_id: person.id
-        return [{ type: "Question", text: personalize(question.text), phone_number: person.phone_number }, get_menu(current_step) ]
+        first_step = Step.find_by_order_index(0)
+
+        if !has_already_executed_option? option
+          execute_action(option)
+          post_action = get_action(option)
+          next_step = option.step
+          random = get_random_response(current_step, "valid")
+          
+          if !random.nil?
+            response = { type: "Response", text: random.text, phone_number: person.phone_number }
+          end
+
+          if !next_step.nil?
+            question = get_random(next_step.questions)
+            Progress.create! step_id: next_step.id, player_id: person.id, contact_id: person.id
+            return [response, { type: "Question", text: personalize(question.text), phone_number: person.phone_number }, post_action, get_menu(next_step) ]
+          else                      
+            Progress.create! step_id: first_step.id, player_id: person.id, contact_id: person.id
+            return [response, post_action, get_menu(first_step)]
+          end
+        else
+          # binding.pry
+          text = get_random_response(option.step, "completed").text
+          personalized = text.gsub(/{{selection}}/, get_executed_option(option))
+          response = [{ type: "Response", text: personalized, phone_number: person.phone_number }, get_menu(first_step) ]
+        end
       end
+    end
+  end
+
+  def get_executed_option option
+    if option.step.menus.first.action == "pick-team"
+      return person.team.name
+    end
+  end
+
+  def has_already_executed_option? option
+    if !option.step.nil? && option.step.menus.first.action == "pick-team"
+      return !person.team_id.nil?
+    end
+  end
+
+  def get_action option
+    if option.menu.action == "subscribe"
+      response_type = (option.text.downcase.starts_with? "yes")? "valid" : "invalid"
+      action = ResponseAction.where(step_id: option.menu.step_id, response_type: response_type).first
+      if !action.nil?
+        return { type: "Action", name: action.name, action_type: action.action_type, parameters: person.team.name }
+      else
+        return nil
+      end
+    end
+  end
+
+  def execute_action option    
+    if option.menu.action == "pick-team"
+      team = Team.find_by_name(option.text)
+      person.team_id = team.id
+      person.save!
+    elsif option.menu.action == "subscribe"
+      if option.text.downcase.starts_with? "yes"
+        person.subscribed = true
+      else
+        person.subscribed = false
+      end
+      person.save!
     end
   end
 
@@ -55,20 +116,6 @@ class FootballController < ApplicationController
       end
     end
   end
-
-  # def progress_step progress, text
-  #   step = progress.step
-  #   puts "Hey"
-  #   if step.step_type == "menu"
-  #     if step.name == "My Team"
-  #       random_question = get_random(step.questions)
-  #       if !random_question.nil?
-  #         Progress.create! step_id: step.id, player_id: person.id, contact_id: person.id
-  #         return [{ type: "Question", text: personalize(random_question.text), phone_number: person.phone_number }, get_menu(step) ]
-  #       end
-  #     end      
-  #   end
-  # end
 
   def options_text menu
     menu.options.collect { |opt| "#{opt.key}. #{opt.text}" }.join("\r\n")    

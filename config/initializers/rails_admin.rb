@@ -128,6 +128,21 @@ RailsAdmin.config do |config|
       end
     end
 
+    config.model 'Option' do
+      object_label_model do
+        :text
+      end
+      list do
+        field :index
+        field :key
+        field :text
+        field :step do
+          label 'Next Step'
+        end
+        field :menu
+      end
+    end
+
     member :upload_image do
       register_instance_option :link_icon do
         'icon-upload'
