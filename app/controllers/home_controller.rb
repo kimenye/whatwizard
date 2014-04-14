@@ -2,6 +2,29 @@ class HomeController < ApplicationController
   skip_before_action :verify_authenticity_token 
   before_action :set_contact, only: [:wizard]
 
+  def self.is_valid_date? str
+    if str.length > 8
+      begin
+        date = Date.parse(str)
+        return HomeController.is_over_18?(date)
+      rescue ArgumentError
+        return false
+      end
+    else
+      str = str.gsub("-","/")      
+      begin
+        date = Date.strptime(str, '%d/%m/%y')
+        return HomeController.is_over_18?(date)
+      rescue ArgumentError
+        return false        
+      end
+    end    
+  end
+
+  def self.is_over_18? dt
+    (Date.today - dt).to_i / 365 >= 18
+  end
+
   def wizard
     if params.has_key?(:text)
       if params[:text].downcase == ENV['RESET_CODE'].downcase
@@ -70,7 +93,11 @@ class HomeController < ApplicationController
     end
 
     def is_valid? step, value
-      matches?(step.expected_answer, value)
+      if step.step_type != "dob"
+        matches?(step.expected_answer, value)
+      else
+        return HomeController.is_valid_date?(value)
+      end
     end
 
     def matches? match, value
@@ -108,7 +135,7 @@ class HomeController < ApplicationController
     def progress_step progress, text
       # binding.pry
       step = progress.step
-      if step.step_type == "opt-in"
+      if step.step_type == "opt-in" || step.step_type == "dob"
         # if it is an opt-in i.e. yes or no
         contact = progress.contact
 

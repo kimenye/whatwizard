@@ -7,6 +7,69 @@ class HomeControllerTest < ActionController::TestCase
   	Step.delete_all
   	Question.delete_all
   	Progress.delete_all
+    SystemResponse.delete_all
+  end
+
+  test "Should use the correct format for age validation" do
+    opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0
+    SystemResponse.create! text: "Cool!", step_id: opt_step.id, response_type: "valid"
+    SystemResponse.create! text: "Wrong!", step_id: opt_step.id, response_type: "invalid"
+
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: nil
+    progress = Progress.create! step_id: opt_step.id, contact_id: contact.id
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "01/11/1986"}
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: "Cool!", phone_number: "254722778348", image_id: nil }] }
+    assert_equal expected.to_json, response.body  
+
+    contact = Contact.find_by_phone_number("254722778348")  
+    assert_equal true, contact.opted_in
+  end
+
+  test "Should validate correct date formats" do
+    assert_equal true, HomeController.is_valid_date?("01/11/1986")
+    assert_equal false, HomeController.is_valid_date?("23/23/1986")
+    assert_equal true, HomeController.is_valid_date?("11/01/86")
+    assert_equal true, HomeController.is_valid_date?("11/1/86")
+    assert_equal true, HomeController.is_valid_date?("11-1-86")
+    assert_equal true, HomeController.is_valid_date?("11-01-86")
+    assert_equal false, HomeController.is_valid_date?("01/11/2006")
+  end
+
+
+  test "Should be over 18 even if using the correct date format" do
+    opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0
+    SystemResponse.create! text: "Cool!", step_id: opt_step.id, response_type: "valid"
+    SystemResponse.create! text: "Wrong!", step_id: opt_step.id, response_type: "invalid"
+
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: nil
+    progress = Progress.create! step_id: opt_step.id, contact_id: contact.id
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "01/11/2006"}
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: "Wrong!", phone_number: "254722778348", image_id: nil }] }
+    assert_equal expected.to_json, response.body  
+
+    contact = Contact.find_by_phone_number("254722778348")  
+    assert_equal false, contact.opted_in
+  end
+
+  test "Should mark the wrong date format for age validation" do
+    opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0
+    SystemResponse.create! text: "Cool!", step_id: opt_step.id, response_type: "valid"
+    SystemResponse.create! text: "Wrong!", step_id: opt_step.id, response_type: "invalid"
+
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: nil
+    progress = Progress.create! step_id: opt_step.id, contact_id: contact.id
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "23/23/1986"}
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: "Wrong!", phone_number: "254722778348", image_id: nil }] }
+    assert_equal expected.to_json, response.body  
   end
 
   test "should create a contact if it doesn't already exist" do
