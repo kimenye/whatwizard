@@ -10,7 +10,7 @@ class Step < ActiveRecord::Base
   validates :name, presence: true
 
   def step_type_enum
-  	[['Opt In', 'opt-in'], ['Yes or No', 'yes-no'], ['Numeric', 'numeric'], ['Entry', 'serial'], ['Free Text', 'free-text'], ['Menu', 'menu']]
+  	[['Date of Birth','dob'], ['Opt In', 'opt-in'], ['Yes or No', 'yes-no'], ['Numeric', 'numeric'], ['Entry', 'serial'], ['Free Text', 'free-text'], ['Menu', 'menu']]
   end
 
   def action_enum
