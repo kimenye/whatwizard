@@ -126,6 +126,14 @@ class FootballController < ApplicationController
     { type: "Response", text: options_text(menu), phone_number: person.phone_number }
   end
 
+  def get_random_response step, type
+    if !type.nil?
+      get_random(SystemResponse.where(step_id: step.id, response_type: type))
+    else
+      get_random(SystemResponse.where(step_id: step.id))
+    end
+  end
+
   def person
     @player
   end

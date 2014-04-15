@@ -31,6 +31,11 @@ RailsAdmin.config do |config|
 
     config.excluded_models << Progress
     config.excluded_models << Media
+    config.excluded_models << Match
+    config.excluded_models << Player
+    config.excluded_models << Prediction
+    config.excluded_models << Round
+    config.excluded_models << Team
 
     ## With an audit adapter, you can add:
     # history_index
@@ -71,6 +76,7 @@ RailsAdmin.config do |config|
       edit do
         field :text
         field :step
+        field :language
         # field :media
       end
     end
@@ -109,7 +115,8 @@ RailsAdmin.config do |config|
         field :text
         field :response_type
         field :step
-        field :media
+        field :language
+        # field :media
       end
     end
 
@@ -129,9 +136,6 @@ RailsAdmin.config do |config|
     end
 
     config.model 'Option' do
-      object_label_model do
-        :text
-      end
       list do
         field :index
         field :key

@@ -8,12 +8,38 @@ class HomeControllerTest < ActionController::TestCase
   	Question.delete_all
   	Progress.delete_all
     SystemResponse.delete_all
+    Language.delete_all
+
+    Language.create! code: "swa", name: "Swahili"
+    Language.create! code: "en", name: "English"
+  end
+
+  test "Should use the default language if the contact has not specified one yet" do
+    opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0
+    eng_qn = Question.create! text: "Hello {{contact_name}}.", step_id: opt_step.id, language: "en"
+    swa_qn = Question.create! text: "Habari {{contact_name}}", step_id: opt_step.id, language: "swa"
+    swa_valid = SystemResponse.create! text: "Karibu {{contact_name}}", step_id: opt_step.id, language: "swa", response_type: "valid"
+    en_valid = SystemResponse.create! text: "Welcome {{contact_name}}", step_id: opt_step.id, language: "en", response_type: "valid"
+    
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "01/11/1986"}
+    assert_response :success 
+
+    expected = { response: [{ type: "Question", text: "Habari dsfsdf", phone_number: "254722778348" }] }
+    assert_equal expected.to_json, response.body
+
+    contact = Contact.find_by_phone_number("254722778348")  
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "01/11/1986"}
+    assert_response :success 
+
+    expected = { response: [ swa_valid.to_result(contact) ] }
+    assert_equal expected.to_json, response.body
   end
 
   test "Should use the correct format for age validation" do
     opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0
-    SystemResponse.create! text: "Cool!", step_id: opt_step.id, response_type: "valid"
-    SystemResponse.create! text: "Wrong!", step_id: opt_step.id, response_type: "invalid"
+    SystemResponse.create! text: "Cool!", step_id: opt_step.id, response_type: "valid", language: "swa"
+    SystemResponse.create! text: "Wrong!", step_id: opt_step.id, response_type: "invalid", language: "swa"
 
     contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: nil
     progress = Progress.create! step_id: opt_step.id, contact_id: contact.id
@@ -21,7 +47,7 @@ class HomeControllerTest < ActionController::TestCase
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "01/11/1986"}
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: "Cool!", phone_number: "254722778348", image_id: nil }] }
+    expected = { response: [{ type: "Response", text: "Cool!", phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body  
 
     contact = Contact.find_by_phone_number("254722778348")  
@@ -44,13 +70,13 @@ class HomeControllerTest < ActionController::TestCase
     SystemResponse.create! text: "Cool!", step_id: opt_step.id, response_type: "valid"
     SystemResponse.create! text: "Wrong!", step_id: opt_step.id, response_type: "invalid"
 
-    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: nil
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", language: "en", opted_in: nil
     progress = Progress.create! step_id: opt_step.id, contact_id: contact.id
 
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "01/11/2006"}
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: "Wrong!", phone_number: "254722778348", image_id: nil }] }
+    expected = { response: [{ type: "Response", text: "Wrong!", phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body  
 
     contact = Contact.find_by_phone_number("254722778348")  
@@ -62,13 +88,13 @@ class HomeControllerTest < ActionController::TestCase
     SystemResponse.create! text: "Cool!", step_id: opt_step.id, response_type: "valid"
     SystemResponse.create! text: "Wrong!", step_id: opt_step.id, response_type: "invalid"
 
-    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: nil
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: nil, language: "en"
     progress = Progress.create! step_id: opt_step.id, contact_id: contact.id
 
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "23/23/1986"}
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: "Wrong!", phone_number: "254722778348", image_id: nil }] }
+    expected = { response: [{ type: "Response", text: "Wrong!", phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body  
   end
 
@@ -85,13 +111,13 @@ class HomeControllerTest < ActionController::TestCase
     action = ResponseAction.create! name: "Opt in list", step_id: opt_step.id, action_type: "add-to-list", response_type: "valid", parameters: "opt-in-list"
     SystemResponse.create! text: "Cool!", step_id: opt_step.id, response_type: "valid"
     
-    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
     progress = Progress.create! step_id: opt_step.id, contact_id: contact.id
 
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yes"}
     assert_response :success 
 
-    expected = { response: [{ type: "Response", text: "Cool!", phone_number: "254722778348", image_id: nil }, { type: "Action", name: "Opt in list", action_type: "add-to-list", parameters: "opt-in-list" }] }
+    expected = { response: [{ type: "Response", text: "Cool!", phone_number: "254722778348" }, { type: "Action", name: "Opt in list", action_type: "add-to-list", parameters: "opt-in-list" }] }
     assert_equal expected.to_json, response.body  
   end
 
@@ -105,25 +131,25 @@ class HomeControllerTest < ActionController::TestCase
     valid = SystemResponse.create! text: "Cool", step_id: step.id, response_type: "valid"
     rebound = SystemResponse.create! text: "Good to hear from you again. Did you enjoy a world-class Heineken since last time?", step_id: step.id, response_type: "rebound"
 
-    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
     progress = Progress.create! step_id: step.id, contact_id: contact.id
 
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "no" }
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: "Too bad", phone_number: "254722778348", image_id: nil }, { type: "Action", name: "Not a customer", action_type: "add-to-list", parameters: "Non-Customers" }] }
+    expected = { response: [{ type: "Response", text: "Too bad", phone_number: "254722778348" }, { type: "Action", name: "Not a customer", action_type: "add-to-list", parameters: "Non-Customers" }] }
     assert_equal expected.to_json, response.body    
 
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "Heineken"}
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: rebound.text, phone_number: "254722778348", image_id: nil }]}
+    expected = { response: [{ type: "Response", text: rebound.text, phone_number: "254722778348" }]}
     assert_equal expected.to_json, response.body  
 
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "yes"}
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil}, { type: 'Question', text: prompt.text, phone_number: "254722778348", image_id: nil }, { type: "Action", name: removeAction.name, action_type: removeAction.action_type, parameters: removeAction.parameters }] }
+    expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348" }, { type: 'Question', text: prompt.text, phone_number: "254722778348" }, { type: "Action", name: removeAction.name, action_type: removeAction.action_type, parameters: removeAction.parameters }] }
     assert_equal expected.to_json, response.body    
   end
 
@@ -133,13 +159,13 @@ class HomeControllerTest < ActionController::TestCase
     endConversation = ResponseAction.create! name: "Rebound customer", step_id: step.id, action_type: "end-conversation", response_type: "invalid"
     invalid = SystemResponse.create! text: "Too bad", step_id: step.id, response_type: "invalid"
 
-    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
     progress = Progress.create! step_id: step.id, contact_id: contact.id
 
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "no" }
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: invalid.text, phone_number: "254722778348", image_id: nil}, 
+    expected = { response: [{ type: "Response", text: invalid.text, phone_number: "254722778348" }, 
         { type: "Action", name: action.name, action_type: action.action_type, parameters: action.parameters },
         { type: "Action", name: endConversation.name, action_type: endConversation.action_type, parameters: endConversation.parameters }] }
 
@@ -151,13 +177,13 @@ class HomeControllerTest < ActionController::TestCase
     SystemResponse.create! text: "Thank you for your time", step_id: final_step.id, response_type: "final"
     SystemResponse.create! text: "Awesome", step_id: final_step.id, response_type: "valid"
 
-    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
     progress = Progress.create! step_id: final_step.id, contact_id: contact.id
 
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: "Awesome", phone_number: "254722778348", image_id: nil }, { type: "Response", text: "Thank you for your time", phone_number: "254722778348", image_id: nil }] }
+    expected = { response: [{ type: "Response", text: "Awesome", phone_number: "254722778348" }, { type: "Response", text: "Thank you for your time", phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body    
 
     contact = Contact.find_by_phone_number("254722778348") 
@@ -181,13 +207,13 @@ class HomeControllerTest < ActionController::TestCase
     SystemResponse.create! text: "Awesome", step_id: final_step.id, response_type: "valid"
     SystemResponse.create! text: "Please just chill", step_id: final_step.id, response_type: "end"
 
-    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: nil
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: nil, language: "en"
     progress = Progress.create! step_id: final_step.id, contact_id: contact.id
 
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "yes"}
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: "Awesome", phone_number: "254722778348", image_id: nil }] }
+    expected = { response: [{ type: "Response", text: "Awesome", phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body    
 
     contact = Contact.find_by_phone_number("254722778348") 
@@ -196,16 +222,16 @@ class HomeControllerTest < ActionController::TestCase
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "What is?"}
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: "Please just chill", phone_number: "254722778348", image_id: nil }] }
+    expected = { response: [{ type: "Response", text: "Please just chill", phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body
   end
 
   test "Reset deletes the message and asks the user to text in Heineken" do
     next_step = Step.create! name: "Heineken Consumer", step_type: "yes-no", order_index: 1
     opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, yeah", wrong_answer: "No, no!, I'm not", next_step_id: next_step.id
-    qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
-    rsp = SystemResponse.create! text: "Sorry only 18 and over", response_type: "invalid", step_id: opt_in_step.id
-    SystemResponse.create! text: "Karibu", response_type: "valid", step_id: opt_in_step.id
+    qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id, language: "swa"
+    rsp = SystemResponse.create! text: "Sorry only 18 and over", response_type: "invalid", step_id: opt_in_step.id, language: "swa"
+    SystemResponse.create! text: "Karibu", response_type: "valid", step_id: opt_in_step.id, language: "swa"
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
     assert_response :success
 
@@ -225,7 +251,7 @@ class HomeControllerTest < ActionController::TestCase
     contact = Contact.find_by_phone_number("254722778348") 
     assert_equal true, contact.nil?
 
-    expected = { response: [{ type: "Response", text: "Type #{ENV['RESTART_CODE']} to restart", phone_number: "254722778348", image_id: nil }] }
+    expected = { response: [{ type: "Response", text: "Type #{ENV['RESTART_CODE']} to restart", phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body    
 
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken"}
@@ -241,13 +267,13 @@ class HomeControllerTest < ActionController::TestCase
     contact = Contact.find_by_phone_number("254722778348") 
     assert_equal false, contact.opted_in
 
-    expected = { response: [{ type: "Response", text: "Sorry only 18 and over", phone_number: "254722778348", image_id: nil }] }
+    expected = { response: [{ type: "Response", text: "Sorry only 18 and over", phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body   
   end
 
   test "It should send a question from the first step if a contact has not engaged with the system before" do
   	opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0
-  	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
+  	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id, language: "swa"
   	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
   	assert_response :success
 
@@ -264,7 +290,7 @@ class HomeControllerTest < ActionController::TestCase
   test "It should opt a contact in if the contact answers yes to an opt-in question" do
  	  opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, Yea, Ndio"
     action = ResponseAction.create! name: "Add-to-List", step_id: opt_in_step.id, action_type: "add-to-list", response_type: "valid", parameters: "opt-in-list"
-  	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
+  	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id, language: "swa"
 
 	  post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
   	assert_response :success
@@ -281,8 +307,8 @@ class HomeControllerTest < ActionController::TestCase
 
   test "It should opt-out a contact if the contact answers no to an opt-in question" do
  	  opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, expected_answer: "Yes, Yea, Ndio"
-  	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
-  	rsp = SystemResponse.create! text: "Grow up first", step_id: opt_in_step.id, response_type: "invalid"
+  	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id, language: "swa"
+  	rsp = SystemResponse.create! text: "Grow up first", step_id: opt_in_step.id, response_type: "invalid", language: "swa"
 
 	  post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
   	assert_response :success
@@ -293,7 +319,7 @@ class HomeControllerTest < ActionController::TestCase
   	contact = Contact.find_by_phone_number("254722778348") 
   	assert_equal false, contact.opted_in
 
-  	expected = { response: [{ type: "Response", text: rsp.text, phone_number: "254722778348", image_id: nil }] }
+  	expected = { response: [{ type: "Response", text: rsp.text, phone_number: "254722778348" }] }
   	assert_equal expected.to_json, response.body
 
   	# what happens if a contact opt-out.
@@ -309,15 +335,13 @@ class HomeControllerTest < ActionController::TestCase
   test "It should advance the progress to the next step if the user opts-in" do
   	next_step = Step.create! name: "Heineken Consumer", step_type: "yes-no", order_index: 1
  	  opt_in_step = Step.create! name: "Opt-In", step_type: "opt-in", order_index: 0, next_step_id: next_step.id, expected_answer: "Yes, Yea, Ndio", wrong_answer: "no"
-  	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id
-  	next_qn = Question.create! text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", step_id: next_step.id
+  	qn = Question.create! text: "Niaje {{contact_name}}! Before we continue, are you over 18. Please reply with Yes or No.", step_id: opt_in_step.id, language: "swa"
+  	next_qn = Question.create! text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", step_id: next_step.id, language: "swa"
 
 	  post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken is awesome"}
   	assert_response :success
 
   	post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yes"}  	
-  	assert_response :success
- 	
   	assert_response :success
 
   	contact = Contact.find_by_phone_number("254722778348") 
@@ -326,7 +350,7 @@ class HomeControllerTest < ActionController::TestCase
   	assert_equal next_step.id, current.step_id 
 
   	# need to test that the response to the api is the next question
-  	expected = { response: [{ type: "Question", text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", phone_number: "254722778348", image_id: nil }] }
+  	expected = { response: [{ type: "Question", text: "Cool. Are you a Heineken Consumer. Please reply with Yes or No?", phone_number: "254722778348" }] }
   	assert_equal expected.to_json, response.body
   end 
 
@@ -343,7 +367,7 @@ class HomeControllerTest < ActionController::TestCase
   	post :wizard, { name: "dssd", phone_number: "254722778348", text: "10" }
   	assert_response :success
 
-  	expected = { response: [{ type: "Response", text: below.text, phone_number: "254722778348", image_id: nil }] }
+  	expected = { response: [{ type: "Response", text: below.text, phone_number: "254722778348" }] }
   	assert_equal expected.to_json, response.body
   end
 
@@ -353,20 +377,20 @@ class HomeControllerTest < ActionController::TestCase
   	valid = SystemResponse.create! text: "That's awesome. Super cool", step_id: next_step.id, response_type: "valid"
  	  equal = SystemResponse.create! text: "Sorry that's not a valid serial", step_id: next_step.id, response_type: "invalid"
  	
- 	  contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+ 	  contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
   	progress = Progress.create! step_id: next_step.id, contact_id: contact.id
 
 
  	  post :wizard, { name: "dssd", phone_number: "254722778348", text: "3212345d3123" }
   	assert_response :success
 
-	  expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }] }
+	  expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348" }] }
   	assert_equal expected.to_json, response.body  	
   end
 
   test "It should NOT accept the test serial number" do
     next_step = Step.create! name: "Collect Serial", step_type: "serial", order_index: 1, expected_answer: '\d{13}', wrong_answer: "8712000900205"    
-    fake = SystemResponse.create! text: "LOL! That's my production code. Please enter yours when you next enjoy a Heineken", step_id: next_step.id, response_type: "fake"
+    fake = SystemResponse.create! text: "LOL! That's my production code. Please enter yours when you next enjoy a Heineken", step_id: next_step.id, response_type: "fake", language: "swa"
   
     contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
     progress = Progress.create! step_id: next_step.id, contact_id: contact.id
@@ -375,7 +399,7 @@ class HomeControllerTest < ActionController::TestCase
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "8712000900205" }
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: fake.text, phone_number: "254722778348", image_id: nil }] }
+    expected = { response: [{ type: "Response", text: fake.text, phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body    
   end
 
@@ -386,13 +410,13 @@ class HomeControllerTest < ActionController::TestCase
   	valid = SystemResponse.create! text: "That's awesome. Super cool", step_id: step.id, response_type: "valid"
 
 
-  	contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+  	contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
   	progress = Progress.create! step_id: step.id, contact_id: contact.id
 
   	post :wizard, { name: "dssd", phone_number: "254722778348", text: "yes" }
   	assert_response :success
 
-  	expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }, { type: "Question", text: question.text, phone_number: contact.phone_number, image_id: nil }]}
+  	expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348" }, { type: "Question", text: question.text, phone_number: contact.phone_number }]}
   	assert_equal expected.to_json, response.body  	  	
   end
 
@@ -403,13 +427,13 @@ class HomeControllerTest < ActionController::TestCase
     valid = SystemResponse.create! text: "That's awesome. Super cool", step_id: step.id, response_type: "invalid"
 
 
-    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
     progress = Progress.create! step_id: step.id, contact_id: contact.id
 
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "no" }
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }, { type: "Question", text: question.text, phone_number: contact.phone_number, image_id: nil }]}
+    expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348" }, { type: "Question", text: question.text, phone_number: contact.phone_number}]}
     assert_equal expected.to_json, response.body        
   end
 
@@ -420,13 +444,13 @@ class HomeControllerTest < ActionController::TestCase
   	invalid = SystemResponse.create! text: "Sorry, only got time for serious chaps", step_id: step.id, response_type: "invalid"
 
 
-  	contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+  	contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
   	progress = Progress.create! step_id: step.id, contact_id: contact.id
 
   	post :wizard, { name: "dssd", phone_number: "254722778348", text: "no" }
   	assert_response :success
 
-  	expected = { response: [{ type: "Response", text: invalid.text, phone_number: "254722778348", image_id: nil }]}
+  	expected = { response: [{ type: "Response", text: invalid.text, phone_number: "254722778348" }]}
   	assert_equal expected.to_json, response.body  	  	
   end
 
@@ -436,13 +460,13 @@ class HomeControllerTest < ActionController::TestCase
 
     valid = SystemResponse.create! text: "Mmh. Humility is not one of your strengths.", step_id: step.id, response_type: "valid"
 
-    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
     progress = Progress.create! step_id: step.id, contact_id: contact.id
 
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "and i cannot lie" }
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348", image_id: nil }]}
+    expected = { response: [{ type: "Response", text: valid.text, phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body        
   end
 
@@ -452,13 +476,13 @@ class HomeControllerTest < ActionController::TestCase
     first_question = Question.create! text: "So {{customer_name}}, are you ready to go to Lisbon to watch the UEFA Champions League final?"
     unknown = SystemResponse.create! text: "Did't quite get that...", step_id: step.id, response_type: "unknown"
 
-    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
     progress = Progress.create! step_id: step.id, contact_id: contact.id
 
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "go to hell!" }
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: unknown.text, phone_number: "254722778348", image_id: nil }]}
+    expected = { response: [{ type: "Response", text: unknown.text, phone_number: "254722778348" }]}
     assert_equal expected.to_json, response.body
   end
 
@@ -467,7 +491,7 @@ class HomeControllerTest < ActionController::TestCase
     invalid = SystemResponse.create! text: "Then there's some good news: you can get one in a bar near you! :) reply with 'Heineken' once you've tasted that quality", step_id: step.id, response_type: "invalid"
     rebound = SystemResponse.create! text: "Good to hear from you again. Did you enjoy a world-class Heineken since last time?", step_id: step.id, response_type: "rebound"
 
-    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
     progress = Progress.create! step_id: step.id, contact_id: contact.id
 
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "no" }
@@ -476,23 +500,23 @@ class HomeControllerTest < ActionController::TestCase
     post :wizard, { name: "dssd", phone_number: "254722778348", text: "Heineken"}
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: rebound.text, phone_number: "254722778348", image_id: nil }]}
+    expected = { response: [{ type: "Response", text: rebound.text, phone_number: "254722778348" }]}
     assert_equal expected.to_json, response.body
   end
 
   it "Should accept an image or video if the step allows for it" do
     final = Step.create! name: "Challenge", step_type: "free-text", order_index: 1
     step = Step.create! name: "Customer", step_type: "serial", order_index: 0, expected_answer: "yes", wrong_answer: "8712000900205", next_step_id: final.id
-    prompt = Question.create! text: "Why should you win this?", step_id: final.id
+    prompt = Question.create! text: "Why should you win this?", step_id: final.id, language: "swa"
 
-    valid_video = SystemResponse.create! text: "Well, let me take a look at that", response_type: "multimedia", step_id: step.id
+    valid_video = SystemResponse.create! text: "Well, let me take a look at that", response_type: "multimedia", step_id: step.id, language: "swa"
     contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true
     progress = Progress.create! step_id: step.id, contact_id: contact.id
 
     post :wizard, { name: "dssd", phone_number: "254722778348", multimedia: true }
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: valid_video.text, phone_number: "254722778348", image_id: nil }, { type: "Question", text: prompt.text, phone_number: "254722778348", image_id: nil}]}
+    expected = { response: [{ type: "Response", text: valid_video.text, phone_number: "254722778348"}, { type: "Question", text: prompt.text, phone_number: "254722778348"}]}
     assert_equal expected.to_json, response.body    
   end
 end

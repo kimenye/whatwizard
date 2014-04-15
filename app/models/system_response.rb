@@ -8,7 +8,15 @@ class SystemResponse < ActiveRecord::Base
     [['Valid','valid'], ['Invalid', 'invalid'], ['More Than', 'more_than'], ['Less Than', 'less_than'], ['Equal', 'equal'], ['Unknown','unknown'], ['Rebound', 'rebound'], ['Multimedia', 'multimedia'], ['Fake', 'fake'], ['Final', 'final'], ['End', 'end'], ['Completed', 'completed']]
   end
 
-  # def uploaded
-  # 	!remote_asset_id.nil?
-  # end
+  def language_enum
+    [['English', 'en'], ['Swahili', 'swa']]
+  end
+
+  def personalize contact
+  	text.gsub(/{{contact_name}}/, contact.name)
+  end
+
+  def to_result contact
+  	{ type: "Response", text: personalize(contact), phone_number: contact.phone_number }
+  end
 end

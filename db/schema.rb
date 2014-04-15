@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140412225713) do
+ActiveRecord::Schema.define(version: 20140414132415) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -20,6 +20,14 @@ ActiveRecord::Schema.define(version: 20140412225713) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.boolean  "bot_complete"
+    t.string   "language"
+  end
+
+  create_table "languages", force: true do |t|
+    t.string   "code"
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "matches", force: true do |t|
@@ -113,6 +121,7 @@ ActiveRecord::Schema.define(version: 20140412225713) do
     t.datetime "image_updated_at"
     t.integer  "remote_asset_id"
     t.integer  "media_id"
+    t.string   "language",           default: "en"
   end
 
   add_index "questions", ["media_id"], name: "index_questions_on_media_id"
@@ -175,6 +184,7 @@ ActiveRecord::Schema.define(version: 20140412225713) do
     t.datetime "image_updated_at"
     t.integer  "remote_asset_id"
     t.integer  "media_id"
+    t.string   "language",                       default: "en"
   end
 
   add_index "system_responses", ["media_id"], name: "index_system_responses_on_media_id"
