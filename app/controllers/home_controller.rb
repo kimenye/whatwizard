@@ -88,7 +88,8 @@ class HomeController < ApplicationController
   def self.matches_search? expected_answer, value
     matched = false
     expected_answer.split(",").each do |ans|
-      if (value.strip.downcase =~ Regexp.new(ans.strip.downcase)) == 0
+      # binding.pry
+      if !(value.strip.downcase =~ Regexp.new(ans.strip.downcase)).nil?
         matched = true
       end
     end

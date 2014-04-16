@@ -377,6 +377,7 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal true, HomeController.matches_search?(step.expected_answer, "yes I do")
     assert_equal true, HomeController.matches_search?(step.expected_answer, "definitely")
     assert_equal true, HomeController.matches_search?(step.expected_answer, "yes definitely")
+    assert_equal true, HomeController.matches_search?(step.expected_answer, "Hell yeah")
     assert_equal true, HomeController.matches_search?(step.expected_answer, "yes please take me")
     assert_equal false, HomeController.matches_search?(step.expected_answer, "no")
   end
