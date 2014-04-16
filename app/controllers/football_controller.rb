@@ -21,7 +21,14 @@ class FootballController < ApplicationController
     menu = Menu.where(step_id: current_step.id).first
     if current_step.step_type == "menu"
       if !is_valid_option? menu, params[:text]
-        return [{ type: "Response", text: get_random_response(current_step, "invalid").text, phone_number: person.phone_number }, { type: "Response", text: options_text(menu), phone_number: person.phone_number } ]
+        responses = [{ type: "Response", text: get_random_response(current_step, "invalid").text, phone_number: person.phone_number }]
+
+        options_txt = options_text(menu)
+        if !options_txt.nil?
+          responses << { type: "Response", text: options_text(menu), phone_number: person.phone_number }
+        end
+        return responses
+
       else
         option = get_valid_option(menu,params[:text])
         first_step = Step.find_by_order_index(0)
@@ -61,9 +68,10 @@ class FootballController < ApplicationController
   end
 
   def has_already_executed_option? option
-    if !option.step.nil? && option.step.menus.first.action == "pick-team"
+    if !option.step.nil? && !option.step.menus.empty? && option.step.menus.first.action == "pick-team"
       return !person.team_id.nil?
     end
+    return false
   end
 
   def get_action option
@@ -118,12 +126,16 @@ class FootballController < ApplicationController
   end
 
   def options_text menu
-    menu.options.collect { |opt| "#{opt.key}. #{opt.text}" }.join("\r\n")    
+    if !menu.nil?
+      menu.options.collect { |opt| "#{opt.key}. #{opt.text}" }.join("\r\n")    
+    end
   end
 
   def get_menu step
     menu = Menu.where(step_id: step.id).first
-    { type: "Response", text: options_text(menu), phone_number: person.phone_number }
+    if !menu.nil?
+      return { type: "Response", text: options_text(menu), phone_number: person.phone_number }
+    end
   end
 
   def get_random_response step, type
