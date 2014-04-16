@@ -99,8 +99,8 @@ class HomeController < ApplicationController
 
     def is_valid? step, value
       if step.step_type != "dob"
-        matches?(step.expected_answer, value)
-        # HomeController.matches_search?(step.expected_answer, value)
+        # matches?(step.expected_answer, value)
+        HomeController.matches_search?(step.expected_answer, value)
       elsif step.step_type == "dob"
         return HomeController.is_valid_date?(value)
       end

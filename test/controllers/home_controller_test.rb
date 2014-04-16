@@ -12,6 +12,7 @@ class HomeControllerTest < ActionController::TestCase
 
     Language.create! code: "swa", name: "Swahili"
     Language.create! code: "en", name: "English"
+    ENV['DEFAULT_LANGUAGE'] = "swa"
   end
 
   test "Should use the default language if the contact has not specified one yet" do
@@ -376,6 +377,7 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal true, HomeController.matches_search?(step.expected_answer, "yes I do")
     assert_equal true, HomeController.matches_search?(step.expected_answer, "definitely")
     assert_equal true, HomeController.matches_search?(step.expected_answer, "yes definitely")
+    assert_equal true, HomeController.matches_search?(step.expected_answer, "yes please take me")
     assert_equal false, HomeController.matches_search?(step.expected_answer, "no")
   end
 
