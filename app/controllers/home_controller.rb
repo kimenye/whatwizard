@@ -2,29 +2,6 @@ class HomeController < ApplicationController
   skip_before_action :verify_authenticity_token 
   before_action :set_contact, only: [:wizard]
 
-  def self.is_valid_date? str
-    if str.length > 8
-      begin
-        date = Date.parse(str)
-        return HomeController.is_over_18?(date)
-      rescue ArgumentError
-        return false
-      end
-    else
-      str = str.gsub("-","/")      
-      begin
-        date = Date.strptime(str, '%d/%m/%y')
-        return HomeController.is_over_18?(date)
-      rescue ArgumentError
-        return false        
-      end
-    end    
-  end
-
-  def self.is_over_18? dt
-    (Date.today - dt).to_i / 365 >= 18
-  end
-
   def wizard
     if params.has_key?(:text)
       if params[:text].downcase == ENV['RESET_CODE'].downcase
@@ -83,12 +60,48 @@ class HomeController < ApplicationController
     end
   end
 
+
+  def self.is_valid_date? str
+    if str.length > 8
+      begin
+        date = Date.parse(str)
+        return HomeController.is_over_18?(date)
+      rescue ArgumentError
+        return false
+      end
+    else
+      str = str.gsub("-","/")      
+      str = str.gsub(".","/")      
+      begin
+        date = Date.strptime(str, '%d/%m/%y')
+        return HomeController.is_over_18?(date)
+      rescue ArgumentError
+        return false        
+      end
+    end    
+  end
+
+  def self.is_over_18? dt
+    (Date.today - dt).to_i / 365 >= 18
+  end
+
+  def self.matches_search? expected_answer, value
+    matched = false
+    expected_answer.split(",").each do |ans|
+      if (value.strip.downcase =~ Regexp.new(ans.strip.downcase)) == 0
+        matched = true
+      end
+    end
+    matched
+  end
+
   private    
 
     def is_valid? step, value
       if step.step_type != "dob"
         matches?(step.expected_answer, value)
-      else
+        # HomeController.matches_search?(step.expected_answer, value)
+      elsif step.step_type == "dob"
         return HomeController.is_valid_date?(value)
       end
     end

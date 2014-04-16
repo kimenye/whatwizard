@@ -98,8 +98,7 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal expected.to_json, response.body  
   end
 
-  test "should create a contact if it doesn't already exist" do
-  	
+  test "should create a contact if it doesn't already exist" do  	
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "yes"}
     assert_response :success
     contact = Contact.find_by_phone_number("254722778348") 
@@ -369,6 +368,15 @@ class HomeControllerTest < ActionController::TestCase
 
   	expected = { response: [{ type: "Response", text: below.text, phone_number: "254722778348" }] }
   	assert_equal expected.to_json, response.body
+  end
+
+  test "It should accept a yes or no if any of the response is included" do
+    step = Step.create! name: "Yes No", step_type: "yes-no", order_index: 1, expected_answer: "yes, definitely, off course, yeah, yea, yup,ofcourse, of course, ndio, yep, affirmative", wrong_answer: "no, never, nah, nope, nop, not"
+
+    assert_equal true, HomeController.matches_search?(step.expected_answer, "yes I do")
+    assert_equal true, HomeController.matches_search?(step.expected_answer, "definitely")
+    assert_equal true, HomeController.matches_search?(step.expected_answer, "yes definitely")
+    assert_equal false, HomeController.matches_search?(step.expected_answer, "no")
   end
 
   test "It should accept a valid serial number based on the response" do
