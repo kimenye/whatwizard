@@ -98,6 +98,7 @@ RailsAdmin.config do |config|
         field :parameters
         field :action_type
         field :response_type
+        field :delay
       end
     end
 
