@@ -272,7 +272,11 @@ class HomeController < ApplicationController
     def add_actions responses, step, response_type
       actions = ResponseAction.where(step_id: step.id, response_type: response_type)
       actions.each do |action|
-        responses << { type: "Action", name: action.name, action_type: action.action_type, parameters: action.parameters }
+        if action.delay.nil?
+          responses << { type: "Action", name: action.name, action_type: action.action_type, parameters: action.parameters }
+        else
+          responses << { type: "Action", name: action.name, action_type: action.action_type, parameters: action.parameters, delay: action.delay }
+        end
       end
       return responses
     end

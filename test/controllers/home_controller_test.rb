@@ -106,6 +106,21 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal false, contact.nil?    
   end
 
+  test "An action can have a delayed execution" do
+    opt_step = Step.create! name: "Opt-In", step_type: "yes-no", order_index: 0, expected_answer: "Yes", wrong_answer: "No"
+    action = ResponseAction.create! name: "Opt in list", step_id: opt_step.id, action_type: "add-to-list", response_type: "valid", parameters: "opt-in-list", delay: 20
+    SystemResponse.create! text: "Cool!", step_id: opt_step.id, response_type: "valid"
+
+    contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: true, language: "en"
+    progress = Progress.create! step_id: opt_step.id, contact_id: contact.id
+
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Yes"}
+    assert_response :success 
+
+    expected = { response: [{ type: "Response", text: "Cool!", phone_number: "254722778348" }, { type: "Action", name: "Opt in list", action_type: "add-to-list", parameters: "opt-in-list", delay: 20 }] }
+    assert_equal expected.to_json, response.body
+  end
+
   test "A test can have one or more actions" do
     opt_step = Step.create! name: "Opt-In", step_type: "yes-no", order_index: 0, expected_answer: "Yes", wrong_answer: "No"
     action = ResponseAction.create! name: "Opt in list", step_id: opt_step.id, action_type: "add-to-list", response_type: "valid", parameters: "opt-in-list"

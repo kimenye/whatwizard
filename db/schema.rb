@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140414132415) do
+ActiveRecord::Schema.define(version: 20140417090354) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -135,6 +135,7 @@ ActiveRecord::Schema.define(version: 20140414132415) do
     t.integer  "step_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "delay"
   end
 
   add_index "response_actions", ["step_id"], name: "index_response_actions_on_step_id"
