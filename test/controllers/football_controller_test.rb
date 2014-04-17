@@ -25,8 +25,7 @@ class FootballControllerTest < ActionController::TestCase
 	  	@match = Match.create! home_team_id: @arsenal_team.id, away_team_id: @everton_team.id, round_id: @round_one.id
 	  	@match_two = Match.create! home_team_id: @manu_team.id, away_team_id: @liverpool_team.id, round_id: @round_one.id
 
-	  	@prediction_menu_response = { type: "Response", text: "A. #{@arsenal_team.name} - #{@everton_team.name} \r\nB. #{@manu_team.name} - #{@liverpool_team.name} \r\n", phone_number: @phone_number } #  \r\n B. #{@manu_team.name} - #{@liverpool_team.name} \r\n
-
+	  	@prediction_menu_response = { type: "Response", text: "A. #{@arsenal_team.name} - #{@everton_team.name} \r\nB. #{@manu_team.name} - #{@liverpool_team.name} \r\n", phone_number: @phone_number }
 
 		@home = Step.create! name: "Welcome", step_type: "menu", order_index: 0
 	  	@team_step = Step.create! name: "My Team", step_type: "menu", order_index: 1
@@ -182,6 +181,57 @@ class FootballControllerTest < ActionController::TestCase
 		assert_response :success		
 
 		expected = { response: [{ type: "Question", text: @play_question.text, phone_number: @phone_number}, @prediction_menu_response] }
+		assert_equal expected.to_json, response.body
+	end
+
+	test "It should save a player's prediction" do
+		player = Player.create! name: "Text", phone_number: @phone_number, team_id: @arsenal_team.id
+		Progress.create! player_id: player.id, step_id: @home.id
+
+		post :wizard, { text: "C", name: "Text", phone_number: @phone_number }
+		assert_response :success		
+
+		expected = { response: [{ type: "Question", text: @play_question.text, phone_number: @phone_number}, @prediction_menu_response] }
+		assert_equal expected.to_json, response.body
+
+		post :wizard, { text: "A 3 - 2", name: "Text", phone_number: @phone_number}
+		assert_response :success
+
+		prediction = Prediction.where(player_id: player.id, match_id: @match.id).first
+		assert_equal true, !prediction.nil?
+		assert_equal 3, prediction.home_score		
+		assert_equal 2, prediction.away_score
+
+		post :wizard, { text: "B 0-0", name: "Text", phone_number: @phone_number}
+		assert_response :success
+
+		prediction = Prediction.where(player_id: player.id, match_id: @match_two.id).first
+		assert_equal true, !prediction.nil?
+		assert_equal 0, prediction.home_score		
+		assert_equal 0, prediction.away_score		
+	end
+
+	test "It should display the player's predictions and the unpredicted fixtures after a prediction" do
+		player = Player.create! name: "Text", phone_number: @phone_number, team_id: @arsenal_team.id
+		Progress.create! player_id: player.id, step_id: @home.id
+
+		post :wizard, { text: "C", name: "Text", phone_number: @phone_number }
+		assert_response :success		
+
+		expected = { response: [{ type: "Question", text: @play_question.text, phone_number: @phone_number}, @prediction_menu_response] }
+		assert_equal expected.to_json, response.body
+
+		post :wizard, { text: "A 3 - 2", name: "Text", phone_number: @phone_number}
+		assert_response :success
+
+		prediction = Prediction.where(player_id: player.id, match_id: @match.id).first
+		assert_equal true, !prediction.nil?
+		assert_equal 3, prediction.home_score		
+		assert_equal 2, prediction.away_score
+
+		prediction_response = { type: "Response", text: "A. #{@arsenal_team.name} 3 #{@everton_team.name} 2 \r\nB. #{@manu_team.name} - #{@liverpool_team.name} \r\n", phone_number: @phone_number }
+
+		expected = { response: [{ type: "Question", text: @play_question.text, phone_number: @phone_number}, prediction_response] }
 		assert_equal expected.to_json, response.body
 	end
 end
