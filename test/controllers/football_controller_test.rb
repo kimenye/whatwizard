@@ -31,6 +31,7 @@ class FootballControllerTest < ActionController::TestCase
 	  	@team_step = Step.create! name: "My Team", step_type: "menu", order_index: 1
 	  	@notifications_step = Step.create! name: "Notifications", step_type: "menu", order_index: 2
 	  	@play_step = Step.create! name: "Play", step_type: "menu", order_index: 3
+	  	@confirm_predictions_step = Step.create! name: "Confirm Predictions", step_type: "menu", order_index: 4
 
 
 	  	@prompt = Question.create! text: "Welcome to the Ongair Football on WhatsApp. Please chose an option below by replying with a letter. e.g. To find out about this service reply with the letter 'A'", step_id: @home.id
@@ -48,6 +49,10 @@ class FootballControllerTest < ActionController::TestCase
 		@manu = Option.create! index: 0, key: "A", text: "Manchester United", menu_id: team_menu.id, step_id: @notifications_step.id
 		@arsenal = Option.create! index: 1, key: "B", text: "Arsenal", menu_id: team_menu.id, step_id: @notifications_step.id
 
+		@confirm_predictions_menu = Menu.create! name: "Confirm Predictions", step_id: @confirm_predictions_step.id, action: "confirm-predictions"
+		@confirm_predictions_question = Question.create! text: "Please confirm your submissions", step_id: @confirm_predictions_step.id
+		@confirm_yes = Option.create! index: 0, key: "A", text: "Yes", menu_id: @confirm_predictions_menu.id
+		@confirm_no = Option.create! index: 0, key: "B", text: "Not yet", menu_id: @confirm_predictions_menu.id
 		
 		@play_question = Question.create! text: "Make your predictions", step_id: @play_step.id
 
@@ -234,4 +239,36 @@ class FootballControllerTest < ActionController::TestCase
 		expected = { response: [{ type: "Question", text: @play_question.text, phone_number: @phone_number}, prediction_response] }
 		assert_equal expected.to_json, response.body
 	end
+
+	# test "When a player is done with the predictions, it should prompt them to confirm their submissions" do
+	# 	player = Player.create! name: "Text", phone_number: @phone_number, team_id: @arsenal_team.id
+	# 	Progress.create! player_id: player.id, step_id: @home.id
+
+	# 	post :wizard, { text: "C", name: "Text", phone_number: @phone_number }
+	# 	assert_response :success		
+
+	# 	expected = { response: [{ type: "Question", text: @play_question.text, phone_number: @phone_number}, @prediction_menu_response] }
+	# 	assert_equal expected.to_json, response.body
+
+	# 	post :wizard, { text: "A 3 - 2", name: "Text", phone_number: @phone_number}
+	# 	assert_response :success
+
+	# 	prediction = Prediction.where(player_id: player.id, match_id: @match.id).first
+	# 	assert_equal true, !prediction.nil?
+	# 	assert_equal 3, prediction.home_score		
+	# 	assert_equal 2, prediction.away_score
+
+	# 	post :wizard, { text: "B 0-0", name: "Text", phone_number: @phone_number}
+	# 	assert_response :success
+
+	# 	prediction = Prediction.where(player_id: player.id, match_id: @match_two.id).first
+	# 	assert_equal true, !prediction.nil?
+	# 	assert_equal 0, prediction.home_score		
+	# 	assert_equal 0, prediction.away_score		
+
+	# 	prediction_response = { type: "Response", text: "A. #{@arsenal_team.name} 3 #{@everton_team.name} 2 \r\nB. #{@manu_team.name} - #{@liverpool_team.name} \r\n", phone_number: @phone_number }
+
+	# 	expected = { response: [ prediction_response, { type: "Response", text: @confirm_predictions_question.text, phone_number: @phone_number} ] }
+	# 	assert_equal expected.to_json, response.body
+	# end
 end

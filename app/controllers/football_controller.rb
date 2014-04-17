@@ -127,7 +127,15 @@ class FootballController < ApplicationController
     question = get_random(step.questions)
     round.matches.each do |match|
       if match_key == @keys[n]
-        Prediction.create! player_id: person.id, match_id: match.id, home_score: home_score, away_score: away_score
+        prediction = Prediction.where(match_id: match.id, player_id: person.id, confirmed: nil).first
+        if prediction.nil?
+          Prediction.create! player_id: person.id, match_id: match.id, home_score: home_score, away_score: away_score
+        else
+          prediction.home_score = home_score
+          prediction.away_score = away_score
+
+          prediction.save!
+        end
       end
       n = n + 1
     end
