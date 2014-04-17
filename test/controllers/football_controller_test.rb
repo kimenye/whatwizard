@@ -18,11 +18,14 @@ class FootballControllerTest < ActionController::TestCase
 	  	@phone_number = "254722778348"	
 	  	@arsenal_team = Team.create! name: "Arsenal"
 	  	@everton_team = Team.create! name: "Everton"
+	  	@manu_team = Team.create! name: "Manchester United"
+	  	@liverpool_team = Team.create! name: "Liverpool"
 
 	  	@round_one = Round.create! name: "Round One"
 	  	@match = Match.create! home_team_id: @arsenal_team.id, away_team_id: @everton_team.id, round_id: @round_one.id
+	  	@match_two = Match.create! home_team_id: @manu_team.id, away_team_id: @liverpool_team.id, round_id: @round_one.id
 
-	  	@prediction_menu_response = { type: "Response", text: "A. #{@arsenal_team.name} - #{@everton_team.name}", phone_number: @phone_number }
+	  	@prediction_menu_response = { type: "Response", text: "A. #{@arsenal_team.name} - #{@everton_team.name} \r\nB. #{@manu_team.name} - #{@liverpool_team.name} \r\n", phone_number: @phone_number } #  \r\n B. #{@manu_team.name} - #{@liverpool_team.name} \r\n
 
 
 		@home = Step.create! name: "Welcome", step_type: "menu", order_index: 0
@@ -171,7 +174,7 @@ class FootballControllerTest < ActionController::TestCase
 		assert_equal expected.to_json, response.body
 	end
 
-	test "A player can only submit predictions if they is a round to be played" do
+	test "A player can only submit predictions if there is a round to be played" do
 		player = Player.create! name: "Text", phone_number: @phone_number, team_id: @arsenal_team.id
 		Progress.create! player_id: player.id, step_id: @home.id
 

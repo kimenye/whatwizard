@@ -133,9 +133,24 @@ class FootballController < ApplicationController
 
   def get_menu step
     menu = Menu.where(step_id: step.id).first
-    if !menu.nil?
-      return { type: "Response", text: options_text(menu), phone_number: person.phone_number }
-    end
+    if step.name == "Play"
+      round = Round.last
+      keys = ('A'..'O').to_a
+      n = 0
+      matches = ""
+      question = get_random(step.questions)
+      round.matches.each do |match|
+        matches = matches + "#{keys[n]}. #{Team.find(match.home_team_id).name} - #{Team.find(match.away_team_id).name} \r\n"
+        n = n + 1
+      end
+
+      return { type: "Response", text: matches, phone_number: person.phone_number }
+      
+    else
+      if !menu.nil?
+        return { type: "Response", text: options_text(menu), phone_number: person.phone_number }
+      end
+    end    
   end
 
   def get_random_response step, type
