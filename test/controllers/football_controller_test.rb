@@ -170,15 +170,4 @@ class FootballControllerTest < ActionController::TestCase
 		expected = { response: [{ type: "Response", text: "You already selected Arsenal", phone_number: @phone_number}, @home_menu_response]}
 		assert_equal expected.to_json, response.body
 	end
-
-	test "A player can only submit predictions if they is a round to be played" do
-		player = Player.create! name: "Text", phone_number: @phone_number, team_id: @arsenal_team.id
-		Progress.create! player_id: player.id, step_id: @home.id
-
-		post :wizard, { text: "C", name: "Text", phone_number: @phone_number }
-		assert_response :success		
-
-		expected = { response: [{ type: "Question", text: @play_question.text, phone_number: @phone_number}, @prediction_menu_response] }
-		assert_equal expected.to_json, response.body
-	end
 end
