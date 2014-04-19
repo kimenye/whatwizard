@@ -189,6 +189,21 @@ class FootballControllerTest < ActionController::TestCase
 		assert_equal expected.to_json, response.body
 	end
 
+	test "It validates if a prediction is valid" do
+		assert_equal false, FootballController.is_valid_prediction?("A ")
+		assert_equal true, FootballController.is_valid_prediction?("A 2-2")
+		assert_equal true, FootballController.is_valid_prediction?("A 2 2")
+		assert_equal false, FootballController.is_valid_prediction?("A o O")
+	end
+
+	test "If a user sends the stop keyword the user is thanked for using the application and all data is cleared" do
+		player = Player.create! name: "Text", phone_number: @phone_number, team_id: @arsenal_team.id
+		Progress.create! player_id: player.id, step_id: @home.id
+
+		post :wizard, { text: ENV['STOP_WORD'], name: "Text", phone_number: @phone_number }
+		assert_response :success		
+	end
+
 	test "It should save a player's prediction" do
 		player = Player.create! name: "Text", phone_number: @phone_number, team_id: @arsenal_team.id
 		Progress.create! player_id: player.id, step_id: @home.id

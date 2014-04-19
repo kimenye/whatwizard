@@ -31,11 +31,11 @@ RailsAdmin.config do |config|
 
     config.excluded_models << Progress
     config.excluded_models << Media
-    config.excluded_models << Match
+    # config.excluded_models << Match
     config.excluded_models << Player
     config.excluded_models << Prediction
-    config.excluded_models << Round
-    config.excluded_models << Team
+    # config.excluded_models << Round
+    # config.excluded_models << Team
 
     ## With an audit adapter, you can add:
     # history_index
@@ -117,6 +117,15 @@ RailsAdmin.config do |config|
         field :step
         field :language
         # field :media
+      end
+    end
+
+    config.model 'Match' do
+      list do
+        field :home_team
+        field :away_team
+        field :time
+        field :round
       end
     end
 

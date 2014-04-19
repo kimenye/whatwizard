@@ -5,11 +5,18 @@ class FootballController < ApplicationController
   def wizard
     responses = []
     if params.has_key?(:text)
-      current_progress = Progress.where("player_id =?", @player.id).order(id: :asc).last
-      if current_progress.nil?
-        responses = start(@player)
+      if params[:text].downcase != ENV['STOP_WORD'].downcase
+        current_progress = Progress.where("player_id =?", @player.id).order(id: :asc).last
+        if current_progress.nil?
+          responses = start(@player)
+        else
+          responses = evaluate(current_progress)
+        end
       else
-        responses = evaluate(current_progress)
+        
+        Progress.delete_all(player_id: @player.id)
+        @player.destroy
+        responses = []
       end
     end
     render :json => { response: remove_nil(responses) }
@@ -53,7 +60,6 @@ class FootballController < ApplicationController
               return [response, post_action, get_menu(first_step)]
             end
           else
-            # binding.pry
             text = get_random_response(option.step, "completed").text
             personalized = text.gsub(/{{selection}}/, get_executed_option(option))
             response = [{ type: "Response", text: personalized, phone_number: person.phone_number }, get_menu(first_step) ]
@@ -107,26 +113,17 @@ class FootballController < ApplicationController
   end
 
   def record_predictions step
-    prediction = params[:text]
-    match_key = prediction.split(" ")[0]
-    if prediction.split(" ").size == 2
-      home_score = prediction.split(" ")[1].split("-")[0].strip
-      away_score = prediction.split(" ")[1].split("-")[1].strip
-      # puts "I am 2"
-    elsif prediction.split(" ").size == 4
-      home_score = prediction.split(" ")[1].strip
-      away_score = prediction.split(" ")[3].strip
-      # puts "I am 4"
-    else
-
-    end
-
-    # puts "Away Score => #{away_score} \n Home Score => #{home_score} \n Prediction => #{prediction}"
+    predictions = FootballController.split_prediction(params[:text])
+    match_key = predictions[0]
+    home_score = predictions[1]
+    away_score = predictions[2]
+    
     round = Round.last
     n = 0
     question = get_random(step.questions)
+    keys = get_keys(round)
     round.matches.each do |match|
-      if match_key == @keys[n]
+      if match_key == keys[n]
         prediction = Prediction.where(match_id: match.id, player_id: person.id, confirmed: nil).first
         if prediction.nil?
           Prediction.create! player_id: person.id, match_id: match.id, home_score: home_score, away_score: away_score
@@ -142,7 +139,7 @@ class FootballController < ApplicationController
 
     player_predictions = ""
 
-    @keys.each do |key|
+    keys.each do |key|
       # puts "Matches hash => #{matches_hash(round)}"
       match = matches_hash(round)[key] unless matches_hash(round).nil?
       if !match.nil? 
@@ -161,10 +158,11 @@ class FootballController < ApplicationController
   def matches_hash round
     n = 0
     matches = {}
+    keys = get_keys(round)
     round.matches.each do |match|
       prediction = Prediction.where(match_id: match.id, player_id: person.id).first
       if !prediction.nil?
-        matches[@keys[n]] = {
+        matches[keys[n]] = {
           :home_team => Team.find(match.home_team_id).name,
           :away_team => Team.find(match.away_team_id).name,
           :match => match,
@@ -173,7 +171,7 @@ class FootballController < ApplicationController
           :predicted_away_score => prediction.away_score
         }
       else
-        matches[@keys[n]] = {
+        matches[keys[n]] = {
           :home_team => Team.find(match.home_team_id).name,
           :away_team => Team.find(match.away_team_id).name,
           :match => match,
@@ -225,17 +223,40 @@ class FootballController < ApplicationController
     end
   end
 
+  def self.split_prediction prediction
+    begin
+      split = prediction.strip.split(" ")
+      has_dash = prediction.include?("-")
+      if split.size >= 2 && has_dash
+        score_split = split[1..split.size-1].join.split("-")
+        return [split[0], Integer(score_split[0].strip), Integer(score_split[1].strip)]
+      elsif split.size == 3 && !has_dash
+        return [split[0], Integer(split[1]), Integer(split[2])]
+      end
+    rescue
+      return nil
+    end
+  end
+
+  def self.is_valid_prediction? prediction
+    split = self.split_prediction prediction
+    return !split.nil? && split.length == 3
+  end  
+
+  def get_keys round
+    ('A'..'O').to_a[0, round.matches.count]
+  end
+
   def get_menu step
     menu = Menu.where(step_id: step.id).first
     if step.name == "Play"
       round = Round.last
-      @keys = ('A'..'O').to_a[0, round.matches.count]
-      # puts "Keys => #{@keys}"
+      keys = get_keys(round)
       n = 0
       matches = ""
       question = get_random(step.questions)
       round.matches.each do |match|
-        matches = matches + "#{@keys[n]}. #{Team.find(match.home_team_id).name} - #{Team.find(match.away_team_id).name} \r\n"
+        matches = matches + "#{keys[n]}. #{Team.find(match.home_team_id).name} - #{Team.find(match.away_team_id).name} \r\n"
         n = n + 1
       end
 
