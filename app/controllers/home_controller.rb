@@ -2,6 +2,14 @@ class HomeController < ApplicationController
   skip_before_action :verify_authenticity_token 
   before_action :set_contact, only: [:wizard]
 
+  def test
+    # binding.pry
+
+    puts params
+    
+    render json: { success: true }
+  end
+
   def wizard
     if params.has_key?(:text)
       if params[:text].downcase == ENV['RESET_CODE'].downcase
