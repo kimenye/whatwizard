@@ -1,3 +1,18 @@
+# == Schema Information
+#
+# Table name: response_actions
+#
+#  id            :integer          not null, primary key
+#  name          :string(255)
+#  parameters    :string(255)
+#  action_type   :string(255)
+#  response_type :string(255)
+#  step_id       :integer
+#  created_at    :datetime
+#  updated_at    :datetime
+#  delay         :integer
+#
+
 class ResponseAction < ActiveRecord::Base
   belongs_to :step
 

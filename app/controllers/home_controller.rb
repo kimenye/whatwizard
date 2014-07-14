@@ -1,6 +1,45 @@
 class HomeController < ApplicationController
   skip_before_action :verify_authenticity_token 
-  before_action :set_contact, only: [:wizard]
+  before_action :set_contact, only: [:wizard, :wizard_new]
+
+  def wizard_new
+    puts "#{params}"
+    if is_text?
+      if is_reset?
+        response = reset        
+      else
+        current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+        if @contact.bot_complete          
+          rsp = get_localized_response(current_progress.step, "end")
+          responses = []
+          if !response.nil?
+            responses << rsp.to_result(@contact)
+          end
+          # render :json => { response: responses }        
+          response = responses
+        else
+          
+          if current_progress.nil?
+            # start the steps
+            response = start
+            # render :json => { response: response } 
+          else
+            response = remove_nil(progress_step(current_progress, params[:text]))
+            send_responses response
+            # render :json => { response: remove_nil(response) }
+          end
+        end
+      end
+    elsif is_receipt?
+      message = Message.find_by(external_id: params[:id])
+      if !message.nil?
+        message.received = true
+        message.save!
+      end
+      response = nil
+    end
+    render json: { response: response }
+  end
 
   def wizard
     if params.has_key?(:text)
@@ -88,7 +127,6 @@ class HomeController < ApplicationController
   def self.matches_search? expected_answer, value
     matched = false
     expected_answer.split(",").each do |ans|
-      # binding.pry
       if !(value.strip.downcase =~ Regexp.new(ans.strip.downcase)).nil?
         matched = true
       end
@@ -96,7 +134,66 @@ class HomeController < ApplicationController
     matched
   end
 
-  private    
+  private   
+
+    def reset 
+      phone_number = @contact.phone_number
+      Progress.where(contact_id: @contact.id).destroy_all
+      Contact.delete_all
+      text = "Send #{ENV['RESTART_CODE']} to restart"
+      send_message text, phone_number
+      [{ type: "Response", text: text, phone_number: phone_number }]
+    end
+
+    def start
+      first_step = Step.find_by_order_index(0)      
+      if !first_step.nil?
+        question = get_localized_question(first_step)
+        if !question.nil?
+          Progress.create! step_id: first_step.id, contact_id: @contact.id
+
+          send_message question.personalize(@contact), @contact.phone_number
+
+          return [ question.to_result(@contact) ]
+        end
+      end
+    end
+
+    def send_responses responses
+      responses.each do |response|
+        if response[:type] != "ImageResponse"
+          send_message response[:text], response[:phone_number]
+        else
+          binding.pry
+          send_image response[:image], response[:phone_number]
+          send_message response[:text], response[:phone_number]
+        end
+      end
+    end
+
+    def send_image image, phone_number
+      logger.info("Sending #{image} to #{phone_number}")
+      message = Message.create! phone_number: phone_number, message_type: "Image", image: image
+      message.deliver
+    end
+
+    def send_message text, phone_number
+      logger.info("Sending #{text} to #{phone_number}")
+      message = Message.create! phone_number: phone_number, text: text, message_type: "Text"
+      message.deliver
+    end
+
+    def is_reset?
+      params[:text].downcase == ENV['RESET_CODE'].downcase
+    end
+
+    def is_text?
+      params[:notification_type] == "MessageReceived"
+    end
+
+    def is_receipt?
+      params[:notification_type] == "DeliveryReceipt"
+    end
 
     def is_valid? step, value
       if step.step_type != "dob"
@@ -171,7 +268,7 @@ class HomeController < ApplicationController
           else
             contact.bot_complete = true
             contact.save!
-          end
+          end          
 
           add_actions(responses, step, "valid")
           return responses
@@ -320,16 +417,7 @@ class HomeController < ApplicationController
       get_random(step.questions.reject{ |q| q.language != lang })
     end
 
-    def start
-      first_step = Step.find_by_order_index(0)      
-      if !first_step.nil?
-        question = get_localized_question(first_step)
-        if !question.nil?
-          Progress.create! step_id: first_step.id, contact_id: @contact.id
-          return [ question.to_result(@contact) ]
-        end
-      end
-    end
+
 
     def set_contact
       @contact = Contact.find_by_phone_number(params[:phone_number])

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140417090354) do
+ActiveRecord::Schema.define(version: 20140714081839) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -22,6 +22,22 @@ ActiveRecord::Schema.define(version: 20140417090354) do
     t.boolean  "bot_complete"
     t.string   "language"
   end
+
+  create_table "delayed_jobs", force: true do |t|
+    t.integer  "priority",   default: 0, null: false
+    t.integer  "attempts",   default: 0, null: false
+    t.text     "handler",                null: false
+    t.text     "last_error"
+    t.datetime "run_at"
+    t.datetime "locked_at"
+    t.datetime "failed_at"
+    t.string   "locked_by"
+    t.string   "queue"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "delayed_jobs", ["priority", "run_at"], name: "delayed_jobs_priority"
 
   create_table "languages", force: true do |t|
     t.string   "code"
@@ -60,6 +76,21 @@ ActiveRecord::Schema.define(version: 20140417090354) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "action"
+  end
+
+  create_table "messages", force: true do |t|
+    t.string   "text"
+    t.string   "message_type"
+    t.integer  "external_id"
+    t.boolean  "sent"
+    t.boolean  "received"
+    t.string   "phone_number"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string   "image_file_name"
+    t.string   "image_content_type"
+    t.integer  "image_file_size"
+    t.datetime "image_updated_at"
   end
 
   create_table "options", force: true do |t|

@@ -16,6 +16,10 @@ gem 'paperclip'
 gem 'httmultiparty'
 gem 'unicorn'
 gem 'unicorn-rails'
+gem 'delayed_job_active_record'
+gem 'daemons'
+gem 'annotate'
+
 group :development do
   gem 'better_errors'
   gem 'binding_of_caller', :platforms=>[:mri_19, :mri_20, :rbx]

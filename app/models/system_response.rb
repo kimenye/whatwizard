@@ -1,3 +1,23 @@
+# == Schema Information
+#
+# Table name: system_responses
+#
+#  id                 :integer          not null, primary key
+#  text               :text(255)
+#  response_type      :string(255)
+#  step_id            :integer
+#  created_at         :datetime
+#  updated_at         :datetime
+#  value              :string(255)
+#  image_file_name    :string(255)
+#  image_content_type :string(255)
+#  image_file_size    :integer
+#  image_updated_at   :datetime
+#  remote_asset_id    :integer
+#  media_id           :integer
+#  language           :string(255)      default("en")
+#
+
 class SystemResponse < ActiveRecord::Base
 
   belongs_to :media  
@@ -17,6 +37,10 @@ class SystemResponse < ActiveRecord::Base
   end
 
   def to_result contact
-  	{ type: "Response", text: personalize(contact), phone_number: contact.phone_number }
+    if image.url == "/images/original/missing.png"
+      { type: "Response", text: personalize(contact), phone_number: contact.phone_number }
+    else
+      { type: "ImageResponse", text: personalize(contact), phone_number: contact.phone_number, image: image }
+    end
   end
 end

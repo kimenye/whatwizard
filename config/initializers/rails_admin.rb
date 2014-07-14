@@ -30,7 +30,7 @@ RailsAdmin.config do |config|
     show_in_app
 
     config.excluded_models << Progress
-    config.excluded_models << Media
+    # config.excluded_models << Media
     config.excluded_models << Match
     config.excluded_models << Player
     config.excluded_models << Prediction
@@ -70,14 +70,14 @@ RailsAdmin.config do |config|
       list do
         field :step
         field :text
-        # field :media
+        field :image
       end 
 
       edit do
         field :text
         field :step
         field :language
-        # field :media
+        field :image
       end
     end
 
@@ -110,6 +110,7 @@ RailsAdmin.config do |config|
         field :response_type  
         field :text
         # field :media
+        field :image
       end
 
       edit do 
@@ -117,7 +118,7 @@ RailsAdmin.config do |config|
         field :response_type
         field :step
         field :language
-        # field :media
+        field :image
       end
     end
 
@@ -161,31 +162,31 @@ RailsAdmin.config do |config|
           [:get, :post]
       end
 
-      register_instance_option :controller do
-        Proc.new do
-          if params.has_key?(:submit)
-            require 'httmultiparty'
-            class ImageUploader
-              include HTTMultiParty
-              base_uri ENV['API_URL']  
-            end
+      # register_instance_option :controller do
+      #   Proc.new do
+      #     if params.has_key?(:submit)
+      #       require 'httmultiparty'
+      #       class ImageUploader
+      #         include HTTMultiParty
+      #         base_uri ENV['API_URL']  
+      #       end
             
-            response = Media.find_by_id(params[:id])          
+      #       response = Media.find_by_id(params[:id])          
 
-            if !response.image.nil?
-              result =  ImageUploader.post('/assets/', :query => { files: [File.new(response.image.path)]  }, :detect_mime_type => true,
-                :headers => { "Accept" => "application/json"})
+      #       if !response.image.nil?
+      #         result =  ImageUploader.post('/assets/', :query => { files: [File.new(response.image.path)]  }, :detect_mime_type => true,
+      #           :headers => { "Accept" => "application/json"})
 
-              response.remote_asset_id = result["id"]
-              response.save!
-            end
+      #         response.remote_asset_id = result["id"]
+      #         response.save!
+      #       end
 
-            redirect_to back_or_index, notice: "Image Uploaded"
-          else
-            render "upload_image"
-          end
-        end
-      end
+      #       redirect_to back_or_index, notice: "Image Uploaded"
+      #     else
+      #       render "upload_image"
+      #     end
+      #   end
+      # end
 
     end
 

@@ -15,6 +15,14 @@ class HomeControllerTest < ActionController::TestCase
     ENV['DEFAULT_LANGUAGE'] = "swa"
   end
 
+  test "Should return the restart method when the contact sends the reset code" do
+    post :wizard_new, { notification_type: "MessageReceived", name: "dsfsdf", phone_number: "254722778348", text: "#{ENV['RESET_CODE']}"}
+    assert_response :success
+
+    expected = { response: [{ type: "Response", text: "Send #{ENV['RESTART_CODE']} to restart", phone_number: "254722778348" }] }
+    assert_equal expected.to_json, response.body
+  end
+
   test "Should use the default language if the contact has not specified one yet" do
     opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0
     eng_qn = Question.create! text: "Hello {{contact_name}}.", step_id: opt_step.id, language: "en"
@@ -22,7 +30,7 @@ class HomeControllerTest < ActionController::TestCase
     swa_valid = SystemResponse.create! text: "Karibu {{contact_name}}", step_id: opt_step.id, language: "swa", response_type: "valid"
     en_valid = SystemResponse.create! text: "Welcome {{contact_name}}", step_id: opt_step.id, language: "en", response_type: "valid"
     
-    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "01/11/1986"}
+    post :wizard_new, { notification_type: "MessageReceived", name: "dsfsdf", phone_number: "254722778348", text: "01/11/1986"}
     assert_response :success 
 
     expected = { response: [{ type: "Question", text: "Habari dsfsdf", phone_number: "254722778348" }] }
@@ -30,7 +38,7 @@ class HomeControllerTest < ActionController::TestCase
 
     contact = Contact.find_by_phone_number("254722778348")  
 
-    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "01/11/1986"}
+    post :wizard_new, { notification_type: "MessageReceived", name: "dsfsdf", phone_number: "254722778348", text: "01/11/1986"}
     assert_response :success 
 
     expected = { response: [ swa_valid.to_result(contact) ] }
@@ -45,7 +53,7 @@ class HomeControllerTest < ActionController::TestCase
     contact = Contact.create! name: "dsfsdf", phone_number: "254722778348", opted_in: nil
     progress = Progress.create! step_id: opt_step.id, contact_id: contact.id
 
-    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "01/11/1986"}
+    post :wizard_new, { notification_type: "MessageReceived", name: "dsfsdf", phone_number: "254722778348", text: "01/11/1986"}
     assert_response :success
 
     expected = { response: [{ type: "Response", text: "Cool!", phone_number: "254722778348" }] }

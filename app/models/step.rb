@@ -1,3 +1,21 @@
+# == Schema Information
+#
+# Table name: steps
+#
+#  id              :integer          not null, primary key
+#  name            :string(255)
+#  step_type       :string(255)
+#  order_index     :integer
+#  created_at      :datetime
+#  updated_at      :datetime
+#  next_step_id    :integer
+#  expected_answer :text(255)
+#  allow_continue  :boolean
+#  wrong_answer    :text
+#  rebound         :text
+#  action          :string(255)
+#
+
 class Step < ActiveRecord::Base
   has_many :progress
   has_many :questions
