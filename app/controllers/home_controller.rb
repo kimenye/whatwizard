@@ -37,6 +37,35 @@ class HomeController < ApplicationController
         message.save!
       end
       response = nil
+    elsif is_image?
+      if !@contact.bot_complete
+        current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+        if !current_progress.nil?
+          responses = [ get_localized_response(current_progress.step, "multimedia").to_result(@contact) ]
+          
+          if !current_progress.step.next_step.nil?
+            Progress.create! step_id: current_progress.step.next_step_id, contact_id: @contact.id  
+            responses << get_localized_question(current_progress.step.next_step).to_result(@contact)
+            add_actions(responses, current_progress.step, "valid")
+          else
+            # if there is nothing after this then finish
+            random_response = get_localized_response(current_progress.step, "final")
+            @contact.bot_complete = true
+            @contact.save!
+            if !random_response.nil?
+              responses << random_response.to_result(@contact)
+            end
+            add_actions(responses, current_progress.step, "valid")
+          end
+
+          # render :json => { response: remove_nil(responses) }
+          response = remove_nil(responses)
+          send_responses response
+        else
+          response = start
+          render :json => { response: remove_nil(response) }     
+        end
+      end
     end
     render json: { response: response }
   end
@@ -164,9 +193,11 @@ class HomeController < ApplicationController
         if response[:type] != "ImageResponse"
           send_message response[:text], response[:phone_number]
         else
-          binding.pry
+          # binding.pry
           send_image response[:image], response[:phone_number]
-          send_message response[:text], response[:phone_number]
+          if !response[:text].blank?
+            send_message response[:text], response[:phone_number]
+          end
         end
       end
     end
@@ -193,6 +224,10 @@ class HomeController < ApplicationController
 
     def is_receipt?
       params[:notification_type] == "DeliveryReceipt"
+    end
+
+    def is_image?
+      params[:notification_type] == "ImageReceived"
     end
 
     def is_valid? step, value
