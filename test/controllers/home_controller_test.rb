@@ -8,6 +8,7 @@ class HomeControllerTest < ActionController::TestCase
   	Question.delete_all
   	Progress.delete_all
     SystemResponse.delete_all
+    Response.delete_all
     Language.delete_all
 
     Language.create! code: "swa", name: "Swahili"
