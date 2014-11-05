@@ -554,6 +554,21 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal expected.to_json, response.body    
   end
 
+  it "Should save all user input correct or wrong" do
+    first = Step.create! name: "Level 1", step_type: "exact", order_index: 0, expected_answer: "sesame!", allow_continue: false
+    # prompt = Question.create! text: "Open What?", step_id: first.id, language: "swa"
+
+    contact = Contact.create! phone_number: "255722200200", name: "Blah"
+    progress = Progress.create! step: first, contact: contact
+    wrong = SystemResponse.create! text: "Go away, you're not ali baba", response_type: "invalid", step: first, language: "swa"
+
+    post :wizard, { name: "Ali baba", phone_number: "255722200200", text: "sesame seeds" }
+    assert_response :success
+
+    m = Response.find_by(progress: progress, text: "sesame seeds")
+    assert_not m.nil?
+  end
+
   it "Should reject a wrong answer to an exact step" do
     first = Step.create! name: "Level 1", step_type: "exact", order_index: 0, expected_answer: "sesame!", allow_continue: false
     # prompt = Question.create! text: "Open What?", step_id: first.id, language: "swa"

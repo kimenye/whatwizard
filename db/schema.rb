@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140714081839) do
+ActiveRecord::Schema.define(version: 20141105110120) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -170,6 +170,15 @@ ActiveRecord::Schema.define(version: 20140714081839) do
   end
 
   add_index "response_actions", ["step_id"], name: "index_response_actions_on_step_id"
+
+  create_table "responses", force: true do |t|
+    t.string   "text"
+    t.integer  "progress_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "responses", ["progress_id"], name: "index_responses_on_progress_id"
 
   create_table "results", force: true do |t|
     t.integer  "match_id"

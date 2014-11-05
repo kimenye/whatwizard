@@ -1,6 +1,7 @@
 class HomeController < ApplicationController
   skip_before_action :verify_authenticity_token 
   before_action :set_contact, only: [:wizard, :wizard_new]
+  after_action :record_response, only: [:wizard]
 
   def wizard_new
     # puts "#{params}"
@@ -78,9 +79,9 @@ class HomeController < ApplicationController
         Contact.delete_all
         render json: { response: [ { type: "Response", text: "Type #{ENV['RESTART_CODE']} to restart", phone_number: number }] }
       else
-        current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+        @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
         if @contact.bot_complete          
-          response = get_localized_response(current_progress.step, "end")
+          response = get_localized_response(@current_progress.step, "end")
           responses = []
           if !response.nil?
             responses << response.to_result(@contact)
@@ -88,25 +89,25 @@ class HomeController < ApplicationController
           render :json => { response: responses }        
         else
           
-          if current_progress.nil?
+          if @current_progress.nil?
             # start the steps
             response = start
             render :json => { response: response } 
           else
-            response = progress_step(current_progress, params[:text])
+            response = progress_step(@current_progress, params[:text])
             render :json => { response: remove_nil(response) }
           end
         end
       end
     elsif !params.has_key?(:text) && !@contact.bot_complete      
-      current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
-      if !current_progress.nil?
-        responses = [ get_localized_response(current_progress.step, "multimedia").to_result(@contact) ]
+      @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+      if !@current_progress.nil?
+        responses = [ get_localized_response(@current_progress.step, "multimedia").to_result(@contact) ]
         
-        if !current_progress.step.next_step.nil?
-          Progress.create! step_id: current_progress.step.next_step_id, contact_id: @contact.id  
-          responses << get_localized_question(current_progress.step.next_step).to_result(@contact)
-          add_actions(responses, current_progress.step, "valid")
+        if !@current_progress.step.next_step.nil?
+          Progress.create! step_id: @current_progress.step.next_step_id, contact_id: @contact.id  
+          responses << get_localized_question(@current_progress.step.next_step).to_result(@contact)
+          add_actions(responses, @current_progress.step, "valid")
         else
           # if there is nothing after this then finish
           random_response = get_localized_response(current_progress.step, "final")
@@ -168,7 +169,7 @@ class HomeController < ApplicationController
     def reset 
       phone_number = @contact.phone_number
       Progress.where(contact_id: @contact.id).destroy_all
-      Contact.delete_all
+      # Contact.delete_all
       text = "Send #{ENV['RESTART_CODE']} to restart"
       send_message text, phone_number
       [{ type: "Response", text: text, phone_number: phone_number }]
@@ -458,13 +459,17 @@ class HomeController < ApplicationController
       get_random(step.questions.reject{ |q| q.language != lang })
     end
 
-
-
     def set_contact
       @contact = Contact.find_by_phone_number(params[:phone_number])
       if @contact.nil?
         @contact = Contact.create! phone_number: params[:phone_number], name: params[:name], opted_in: nil, bot_complete: false
       end
       @contact
+    end
+
+    def record_response
+      if !@current_progress.nil? and  params.has_key?(:text)
+        Response.create! progress: @current_progress, text: params[:text]
+      end
     end
 end
