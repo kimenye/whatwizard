@@ -469,7 +469,7 @@ class HomeController < ApplicationController
 
     def record_response
       if !@current_progress.nil? and  params.has_key?(:text)
-        Response.create! progress: @current_progress, text: params[:text]
+        Response.create! progress: @current_progress, text: params[:text], response_type: "Text"
       end
     end
 end

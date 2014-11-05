@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141105110120) do
+ActiveRecord::Schema.define(version: 20141105112228) do
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -176,6 +176,7 @@ ActiveRecord::Schema.define(version: 20141105110120) do
     t.integer  "progress_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "response_type"
   end
 
   add_index "responses", ["progress_id"], name: "index_responses_on_progress_id"

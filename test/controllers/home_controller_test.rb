@@ -565,7 +565,7 @@ class HomeControllerTest < ActionController::TestCase
     post :wizard, { name: "Ali baba", phone_number: "255722200200", text: "sesame seeds" }
     assert_response :success
 
-    m = Response.find_by(progress: progress, text: "sesame seeds")
+    m = Response.find_by(progress: progress, text: "sesame seeds", response_type: "Text")
     assert_not m.nil?
   end
 
