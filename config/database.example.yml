@@ -19,11 +19,7 @@ test:
   timeout: 5000
 
 production:
-  adapter: mysql2
-  database: wassup
-  port: 8889
-  username: root
-  password: root
-  host: 127.0.0.1
+  adapter: sqlite3
+  database: db/production.sqlite3
   pool: 5
   timeout: 5000
