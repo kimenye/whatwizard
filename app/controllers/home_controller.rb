@@ -3,7 +3,7 @@ class HomeController < ApplicationController
   before_action :set_contact, only: [:wizard, :wizard_new]
 
   def wizard_new
-    puts "#{params}"
+    # puts "#{params}"
     if is_text?
       if is_reset?
         response = reset        
@@ -368,6 +368,12 @@ class HomeController < ApplicationController
             responses << random_response.to_result(@contact)
           end
           add_actions(responses, step, "final")
+        end
+        return responses
+      elsif step.step_type == "exact"
+        if text.downcase == step.expected_answer
+        else
+          responses = [get_localized_response(step, "invalid").to_result(@contact)]
         end
         return responses
       else

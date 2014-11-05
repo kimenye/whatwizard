@@ -553,4 +553,16 @@ class HomeControllerTest < ActionController::TestCase
     expected = { response: [{ type: "Response", text: valid_video.text, phone_number: "254722778348"}, { type: "Question", text: prompt.text, phone_number: "254722778348"}]}
     assert_equal expected.to_json, response.body    
   end
+
+  it "Should reject a wrong answer to an exact step" do
+    first = Step.create! name: "Level 1", step_type: "exact", order_index: 0, expected_answer: "sesame!", allow_continue: false
+    # prompt = Question.create! text: "Open What?", step_id: first.id, language: "swa"
+
+    contact = Contact.create! phone_number: "255722200200", name: "Blah"
+    progress = Progress.create! step: first, contact: contact
+    wrong = SystemResponse.create! text: "Go away, you're not ali baba", response_type: "invalid", step: first, language: "swa"
+
+    post :wizard, { name: "Ali baba", phone_number: "255722200200", text: "sesame seeds" }
+    assert_response :success
+  end
 end
