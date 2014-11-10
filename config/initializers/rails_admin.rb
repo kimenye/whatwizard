@@ -109,7 +109,7 @@ RailsAdmin.config do |config|
     end
 
     config.model 'SystemResponse' do
-      label 'Response' 
+      label 'System Response' 
 
       list do
         field :step 
