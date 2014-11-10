@@ -5,6 +5,7 @@ class HomeController < ApplicationController
 
   def wizard_new
     # puts "#{params}"
+    # binding.pry
     if is_text?
       if is_reset?
         response = reset        

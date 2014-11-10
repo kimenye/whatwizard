@@ -30,7 +30,7 @@ class Question < ActiveRecord::Base
   end
 
   def personalize contact
-  	text.gsub(/{{contact_name}}/, contact.name)
+  	text.gsub(/{{contact_name}}/, contact.name.blank? ? "" : contact.name)
   end
 
   def to_result contact
