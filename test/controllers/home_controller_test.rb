@@ -563,7 +563,7 @@ class HomeControllerTest < ActionController::TestCase
     progress = Progress.create! step: first, contact: contact
     wrong = SystemResponse.create! text: "Go away, you're not ali baba", response_type: "invalid", step: first, language: "swa"
 
-    post :wizard, { name: "Ali baba", phone_number: "255722200200", text: "sesame seeds" }
+    post :wizard_new, { name: "Ali baba", phone_number: "255722200200", text: "sesame seeds", notification_type: "MessageReceived" }
     assert_response :success
 
     m = Response.find_by(progress: progress, text: "sesame seeds", response_type: "Text")
@@ -578,7 +578,7 @@ class HomeControllerTest < ActionController::TestCase
     progress = Progress.create! step: first, contact: contact
     wrong = SystemResponse.create! text: "Go away, you're not ali baba", response_type: "invalid", step: first, language: "swa"
 
-    post :wizard, { name: "Ali baba", phone_number: "255722200200", text: "sesame seeds" }
+    post :wizard_new, { name: "Ali baba", phone_number: "255722200200", text: "sesame seeds", notification_type: "MessageReceived" }
     assert_response :success
   end
 end

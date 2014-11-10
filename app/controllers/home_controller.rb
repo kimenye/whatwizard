@@ -1,7 +1,7 @@
 class HomeController < ApplicationController
   skip_before_action :verify_authenticity_token 
   before_action :set_contact, only: [:wizard, :wizard_new]
-  after_action :record_response, only: [:wizard]
+  after_action :record_response, only: [:wizard, :wizard_new]
 
   def wizard_new
     # puts "#{params}"
@@ -9,9 +9,9 @@ class HomeController < ApplicationController
       if is_reset?
         response = reset        
       else
-        current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+        @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
         if @contact.bot_complete          
-          rsp = get_localized_response(current_progress.step, "end")
+          rsp = get_localized_response(@current_progress.step, "end")
           responses = []
           if !response.nil?
             responses << rsp.to_result(@contact)
@@ -20,12 +20,12 @@ class HomeController < ApplicationController
           response = responses
         else
           
-          if current_progress.nil?
+          if @current_progress.nil?
             # start the steps
             response = start
             # render :json => { response: response } 
           else
-            response = remove_nil(progress_step(current_progress, params[:text]))
+            response = remove_nil(progress_step(@current_progress, params[:text]))
             send_responses response
             # render :json => { response: remove_nil(response) }
           end
@@ -468,7 +468,7 @@ class HomeController < ApplicationController
     end
 
     def record_response
-      if !@current_progress.nil? and  params.has_key?(:text)
+      if !@current_progress.nil? and is_text?
         Response.create! progress: @current_progress, text: params[:text], response_type: "Text"
       end
     end
