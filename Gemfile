@@ -28,10 +28,10 @@ group :development do
   gem 'html2haml'
   gem 'quiet_assets'
   gem 'rails_layout'
-  gem 'sqlite3'
+  # gem 'sqlite3'
 end
 
-group :test do
+group :test, :development do
   gem 'sqlite3'
 end
 
