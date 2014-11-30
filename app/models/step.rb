@@ -14,6 +14,7 @@
 #  wrong_answer    :text
 #  rebound         :text
 #  action          :string(255)
+#  account_id      :integer
 #
 
 class Step < ActiveRecord::Base
@@ -22,7 +23,10 @@ class Step < ActiveRecord::Base
   has_many :contacts, through: :progress
   has_many :menus
   belongs_to :next_step, class_name: 'Step'
+  belongs_to :account
 
+  # acts_as_tenant(:account)
+  
   validates :order_index, uniqueness: true, presence: true
   validates :step_type, presence: true
   validates :name, presence: true

@@ -16,12 +16,16 @@
 #  remote_asset_id    :integer
 #  media_id           :integer
 #  language           :string(255)      default("en")
+#  account_id         :integer
 #
 
 class SystemResponse < ActiveRecord::Base
 
   belongs_to :media  
   belongs_to :step
+  belongs_to :account
+
+  # acts_as_tenant(:account)
   has_attached_file :image, :styles => { :medium => "480x480>", :thumb => "48x48>" }
 
   def response_type_enum

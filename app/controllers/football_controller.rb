@@ -52,7 +52,6 @@ class FootballController < ApplicationController
             return [response, post_action, get_menu(first_step)]
           end
         else
-          # binding.pry
           text = get_random_response(option.step, "completed").text
           personalized = text.gsub(/{{selection}}/, get_executed_option(option))
           response = [{ type: "Response", text: personalized, phone_number: person.phone_number }, get_menu(first_step) ]

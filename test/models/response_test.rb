@@ -8,6 +8,7 @@
 #  created_at    :datetime
 #  updated_at    :datetime
 #  response_type :string(255)
+#  account_id    :integer
 #
 
 require "test_helper"

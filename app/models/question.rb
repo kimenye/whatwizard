@@ -14,12 +14,16 @@
 #  remote_asset_id    :integer
 #  media_id           :integer
 #  language           :string(255)      default("en")
+#  account_id         :integer
 #
 
 class Question < ActiveRecord::Base
   belongs_to :step
   belongs_to :media
   has_attached_file :image, :styles => { :medium => "480x480>", :thumb => "48x48>" }
+
+  belongs_to :account
+  # acts_as_tenant(:account)
 
   def uploaded
   	!remote_asset_id.nil?
