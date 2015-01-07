@@ -16,15 +16,15 @@ class HomeControllerTest < ActionController::TestCase
     Language.create! code: "en", name: "English"
     ENV['DEFAULT_LANGUAGE'] = "swa"
 
-    @account = Account.create! name: "Test", phone_number: "254722200200", reset_code: "reset"
+    @account = Account.create! name: "Test", phone_number: "254722200200", reset_code: "reset", start_code: "start"
     @phone_number = "254722200200"
   end
 
   test "Should return the restart method when the contact sends the reset code" do
-    post :wizard_new, { notification_type: "MessageReceived", name: "dsfsdf", phone_number: "254722778348", text: "#{ENV['RESET_CODE']}", account: @phone_number }
+    post :wizard_new, { notification_type: "MessageReceived", name: "dsfsdf", phone_number: "254722778348", text: @account.reset_code, account: @phone_number }
     assert_response :success
 
-    expected = { response: [{ type: "Response", text: "Send #{ENV['RESTART_CODE']} to restart", phone_number: "254722778348" }] }
+    expected = { response: [{ type: "Response", text: "Send start to begin", phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body
   end
 
@@ -275,13 +275,13 @@ class HomeControllerTest < ActionController::TestCase
     assert_equal false, contact.nil?    
     assert_equal true, contact.opted_in
 
-    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: ENV["RESET_CODE"]}
+    post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: @account.reset_code}
     assert_response :success
 
     contact = Contact.find_by_phone_number("254722778348") 
     assert_equal true, contact.nil?
 
-    expected = { response: [{ type: "Response", text: "Type #{ENV['RESTART_CODE']} to restart", phone_number: "254722778348" }] }
+    expected = { response: [{ type: "Response", text: "Send start to restart", phone_number: "254722778348" }] }
     assert_equal expected.to_json, response.body    
 
     post :wizard, {name: "dsfsdf", phone_number: "254722778348", text: "Heineken"}

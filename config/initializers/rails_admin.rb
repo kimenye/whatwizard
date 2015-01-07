@@ -166,12 +166,14 @@ RailsAdmin.config do |config|
         field :name
         field :auth_token
         field :reset_code
+        field :start_code
       end
 
       edit do
         field :phone_number
         field :name
         field :reset_code
+        field :start_code
         field :auth_token
       end
     end

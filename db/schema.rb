@@ -11,13 +11,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141130151257) do
+ActiveRecord::Schema.define(version: 20150107144932) do
 
   create_table "accounts", force: true do |t|
     t.string "phone_number"
     t.string "auth_token"
     t.string "name"
     t.string "reset_code"
+    t.string "start_code"
   end
 
   create_table "contacts", force: true do |t|

@@ -83,11 +83,11 @@ class HomeController < ApplicationController
 
   def wizard
     if params.has_key?(:text)
-      if params[:text].downcase == ENV['RESET_CODE'].downcase
+      if params[:text].downcase == ActsAsTenant.current_tenant.reset_code.downcase
         number = @contact.phone_number
         Progress.where(contact_id: @contact.id).destroy_all
         Contact.delete_all
-        render json: { response: [ { type: "Response", text: "Type #{ENV['RESTART_CODE']} to restart", phone_number: number }] }
+        render json: { response: [ { type: "Response", text: "Send #{ActsAsTenant.current_tenant.start_code} to restart", phone_number: number }] }
       else
         @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
         if @contact.bot_complete          
@@ -180,7 +180,8 @@ class HomeController < ApplicationController
       phone_number = @contact.phone_number
       Progress.where(contact_id: @contact.id).destroy_all
       # Contact.delete_all
-      text = "Send #{ENV['RESTART_CODE']} to restart"
+      
+      text = "Send #{ActsAsTenant.current_tenant.start_code} to begin"
       send_message text, phone_number
       [{ type: "Response", text: text, phone_number: phone_number }]
     end

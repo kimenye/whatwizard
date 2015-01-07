@@ -7,6 +7,7 @@
 #  auth_token   :string(255)
 #  name         :string(255)
 #  reset_code   :string(255)
+#  start_code   :string(255)
 #
 
 class Account < ActiveRecord::Base
