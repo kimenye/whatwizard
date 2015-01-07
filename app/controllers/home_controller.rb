@@ -141,6 +141,7 @@ class HomeController < ApplicationController
 
 
   def self.is_valid_date? str
+    puts ">>>>> Checking date #{str}"
     if str.length > 8
       begin
         date = Date.parse(str)
