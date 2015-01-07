@@ -37,8 +37,7 @@ group :test, :development do
 end
 
 group :production do
-  gem 'pg'
-  gem 'rails_12factor'
+  gem 'mysql2', '0.3.15'
 end
 
 gem 'minitest-rails'
