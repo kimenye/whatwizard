@@ -17,6 +17,7 @@ gem 'paperclip'
 gem 'httmultiparty'
 # gem 'unicorn'
 # gem 'unicorn-rails'
+gem 'acts_as_tenant'
 gem 'thin'
 gem 'delayed_job_active_record'
 gem 'daemons'
@@ -28,15 +29,14 @@ group :development do
   gem 'html2haml'
   gem 'quiet_assets'
   gem 'rails_layout'
-  gem 'sqlite3'
+  # gem 'sqlite3'
 end
 
-group :test do
+group :test, :development do
   gem 'sqlite3'
 end
 
 group :production do
-  #gem 'pg'
   gem 'mysql2', '0.3.15'
 end
 

@@ -1,7 +1,11 @@
 %form.form-horizontal.denser.send_link{:method => "POST", :enctype => "multipart/form-data" }
   %input{:name => "authenticity_token", :type => "hidden", :value => form_authenticity_token}
-    %fieldset
-      %h5
-        Reset all interaction with the bot
-    .form-actions
-      %input.btn.btn-primary{:type => "submit", :name => "submit", :value => "Send"}     
+  %select{name: "account"}
+    - Account.all.each do |account|
+      %option{value: account.id}
+        = account.name
+  %fieldset
+    %h5
+      Reset all interaction with the bot
+  .form-actions
+    %input.btn.btn-primary{:type => "submit", :name => "submit", :value => "Send"}     

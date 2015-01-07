@@ -10,14 +10,18 @@ class HomeControllerTest < ActionController::TestCase
     SystemResponse.delete_all
     Response.delete_all
     Language.delete_all
+    Account.delete_all
 
     Language.create! code: "swa", name: "Swahili"
     Language.create! code: "en", name: "English"
     ENV['DEFAULT_LANGUAGE'] = "swa"
+
+    @account = Account.create! name: "Test", phone_number: "254722200200", reset_code: "reset"
+    @phone_number = "254722200200"
   end
 
   test "Should return the restart method when the contact sends the reset code" do
-    post :wizard_new, { notification_type: "MessageReceived", name: "dsfsdf", phone_number: "254722778348", text: "#{ENV['RESET_CODE']}"}
+    post :wizard_new, { notification_type: "MessageReceived", name: "dsfsdf", phone_number: "254722778348", text: "#{ENV['RESET_CODE']}", account: @phone_number }
     assert_response :success
 
     expected = { response: [{ type: "Response", text: "Send #{ENV['RESTART_CODE']} to restart", phone_number: "254722778348" }] }
@@ -25,7 +29,8 @@ class HomeControllerTest < ActionController::TestCase
   end
 
   test "Should use the default language if the contact has not specified one yet" do
-    opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0
+    next_step = Step.create! name: "Next", step_type: "dob", order_index: 1
+    opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0, next_step: next_step
     eng_qn = Question.create! text: "Hello {{contact_name}}.", step_id: opt_step.id, language: "en"
     swa_qn = Question.create! text: "Habari {{contact_name}}", step_id: opt_step.id, language: "swa"
     swa_valid = SystemResponse.create! text: "Karibu {{contact_name}}", step_id: opt_step.id, language: "swa", response_type: "valid"
@@ -47,7 +52,8 @@ class HomeControllerTest < ActionController::TestCase
   end
 
   test "Should use the correct format for age validation" do
-    opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0
+    next_step = Step.create! name: "Next", step_type: "dob", order_index: 1
+    opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0, next_step: next_step
     SystemResponse.create! text: "Cool!", step_id: opt_step.id, response_type: "valid", language: "swa"
     SystemResponse.create! text: "Wrong!", step_id: opt_step.id, response_type: "invalid", language: "swa"
 
@@ -556,14 +562,14 @@ class HomeControllerTest < ActionController::TestCase
   end
 
   it "Should save all user input correct or wrong" do
-    first = Step.create! name: "Level 1", step_type: "exact", order_index: 0, expected_answer: "sesame!", allow_continue: false
+    first = Step.create! name: "Level 1", step_type: "exact", order_index: 0, expected_answer: "sesame!", allow_continue: false, account: @account
     # prompt = Question.create! text: "Open What?", step_id: first.id, language: "swa"
 
-    contact = Contact.create! phone_number: "255722200200", name: "Blah"
+    contact = Contact.create! phone_number: "255722200200", name: "Blah", account: @account
     progress = Progress.create! step: first, contact: contact
     wrong = SystemResponse.create! text: "Go away, you're not ali baba", response_type: "invalid", step: first, language: "swa"
 
-    post :wizard_new, { name: "Ali baba", phone_number: "255722200200", text: "sesame seeds", notification_type: "MessageReceived" }
+    post :wizard_new, { name: "Ali baba", phone_number: "255722200200", text: "sesame seeds", notification_type: "MessageReceived", account: @phone_number }
     assert_response :success
 
     m = Response.find_by(progress: progress, text: "sesame seeds", response_type: "Text")

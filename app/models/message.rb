@@ -15,23 +15,30 @@
 #  image_content_type :string(255)
 #  image_file_size    :integer
 #  image_updated_at   :datetime
+#  account_id         :integer
 #
 
 class Message < ActiveRecord::Base
+
+	belongs_to :account
+	acts_as_tenant(:account)
 
 	has_attached_file :image, :styles => { :medium => "480x480>", :thumb => "48x48>" }
 
 
 	def deliver
-		if Rails.env.production?
+		logger.info "Attempting delivery"
+		if Rails.env.production? || Rails.env.development?
 			sent = false
 			external_id = nil
 
 			if message_type == "Text"
 	    	    url = "#{ENV['API_URL']}/send"
 
-	    	    logger.info "Sending ... #{{ token: ENV['API_TOKEN'], phone_number: phone_number, text: text, thread: true }}"
-	        	response = HTTParty.post(url, body: { token: ENV['API_TOKEN'], phone_number: phone_number, text: text, thread: true }, debug_output: $stdout)
+	    	    token = account.auth_token
+
+	    	    logger.info "Sending ... #{{ token: token, phone_number: phone_number, text: text, thread: true }}"
+	        	response = HTTParty.post(url, body: { token: token, phone_number: phone_number, text: text, thread: true }, debug_output: $stdout)
 
 	        	# puts "#{response}"
 	        	logger.info "Received #{response.parsed_response}"
@@ -40,10 +47,12 @@ class Message < ActiveRecord::Base
 	        	external_id = response.parsed_response["id"]
 	        else
 	        	url = "#{ENV['API_URL']}/send_image"
-	        	logger.info "Sending ... #{{ token: ENV['API_TOKEN'], phone_number: phone_number, image: image.url, thread: true }}"
+	        	token = account.auth_token
+
+	        	logger.info "Sending ... #{{ token: token, phone_number: phone_number, image: image.url, thread: true }}"
 
 	        	image_url = "#{ENV['BASE_URL']}#{image.url.split('?').first}"
-	        	response = HTTParty.post(url, body: { token: ENV['API_TOKEN'],  phone_number: phone_number, image: image_url, thread: true }, debug_output: $stdout)
+	        	response = HTTParty.post(url, body: { token: token,  phone_number: phone_number, image: image_url, thread: true }, debug_output: $stdout)
 
 	        	logger.info "Received #{response.parsed_response}"
 	        	sent = response.parsed_response["sent"]

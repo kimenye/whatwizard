@@ -57,6 +57,7 @@ RailsAdmin.config do |config|
         field :wrong_answer
         field :rebound
         field :allow_continue  
+        field :account
         # field :action      
       end
 
@@ -65,6 +66,7 @@ RailsAdmin.config do |config|
         field :step_type
         field :order_index
         field :next_step
+        field :account
         field :expected_answer
         field :wrong_answer
         field :allow_continue
@@ -77,6 +79,7 @@ RailsAdmin.config do |config|
         field :step
         field :text
         field :image
+        field :account
       end 
 
       edit do
@@ -84,6 +87,7 @@ RailsAdmin.config do |config|
         field :step
         field :language
         field :image
+        field :account
       end
     end
 
@@ -115,7 +119,7 @@ RailsAdmin.config do |config|
         field :step 
         field :response_type  
         field :text
-        # field :media
+        field :account
         field :image
       end
 
@@ -125,6 +129,7 @@ RailsAdmin.config do |config|
         field :step
         field :language
         field :image
+        field :account
       end
     end
 
@@ -152,6 +157,22 @@ RailsAdmin.config do |config|
           label 'Next Step'
         end
         field :menu
+      end
+    end
+
+    config.model 'Account' do
+      list do
+        field :phone_number
+        field :name
+        field :auth_token
+        field :reset_code
+      end
+
+      edit do
+        field :phone_number
+        field :name
+        field :reset_code
+        field :auth_token
       end
     end
 
@@ -212,9 +233,16 @@ RailsAdmin.config do |config|
       register_instance_option :controller do
         Proc.new do
           if params.has_key?(:submit)
-            count = Contact.delete_all
-            Player.delete_all
-            Progress.delete_all
+            count = 0
+            if params.has_key?(:account)
+              
+              account = Account.find(params[:account])
+              ActsAsTenant.with_tenant(account) do
+                count = Contact.delete_all
+                Player.delete_all
+                Progress.delete_all
+              end
+            end  
             redirect_to back_or_index, notice: "#{count} Contacts reset"
           else
             render "reset_participants"

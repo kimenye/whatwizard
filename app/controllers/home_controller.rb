@@ -5,7 +5,6 @@ class HomeController < ApplicationController
 
   def wizard_new
     # puts "#{params}"
-    # binding.pry
     if is_text?
       if is_reset?
         response = reset        
@@ -26,8 +25,18 @@ class HomeController < ApplicationController
             response = start
             # render :json => { response: response } 
           else
-            response = remove_nil(progress_step(@current_progress, params[:text]))
-            send_responses response
+            if !is_last?
+              response = remove_nil(progress_step(@current_progress, params[:text]))
+              send_responses response
+            else
+              # the last step
+              response = get_localized_response(@current_progress.step, "end")
+              @contact.bot_complete = true
+              @contact.save!
+              if !response.nil?
+                send_responses [response]
+              end
+            end
             # render :json => { response: remove_nil(response) }
           end
         end
@@ -193,12 +202,11 @@ class HomeController < ApplicationController
     def send_responses responses
       responses.each do |response|
         if response[:type] != "ImageResponse"
-          send_message response[:text], response[:phone_number]
+          send_message response[:text], @contact.phone_number
         else
-          # binding.pry
-          send_image response[:image], response[:phone_number]
+          send_image response[:image], @contact.phone_number
           if !response[:text].blank?
-            send_message response[:text], response[:phone_number]
+            send_message response[:text], @contact.phone_number
           end
         end
       end
@@ -217,7 +225,7 @@ class HomeController < ApplicationController
     end
 
     def is_reset?
-      params[:text].downcase == ENV['RESET_CODE'].downcase
+      params[:text].downcase == ActsAsTenant.current_tenant.reset_code
     end
 
     def is_text?
@@ -230,6 +238,10 @@ class HomeController < ApplicationController
 
     def is_image?
       params[:notification_type] == "ImageReceived"
+    end
+
+    def is_last?
+      @current_progress && @current_progress.step.next_step.nil?
     end
 
     def is_valid? step, value
@@ -274,7 +286,6 @@ class HomeController < ApplicationController
     end
 
     def progress_step progress, text
-      # binding.pry
       step = progress.step
       if step.step_type == "opt-in" || step.step_type == "dob"
         # if it is an opt-in i.e. yes or no

@@ -11,7 +11,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141105112228) do
+ActiveRecord::Schema.define(version: 20141130151257) do
+
+  create_table "accounts", force: true do |t|
+    t.string "phone_number"
+    t.string "auth_token"
+    t.string "name"
+    t.string "reset_code"
+  end
 
   create_table "contacts", force: true do |t|
     t.string   "phone_number"
@@ -21,7 +28,10 @@ ActiveRecord::Schema.define(version: 20141105112228) do
     t.datetime "updated_at"
     t.boolean  "bot_complete"
     t.string   "language"
+    t.integer  "account_id"
   end
+
+  add_index "contacts", ["account_id"], name: "index_contacts_on_account_id"
 
   create_table "delayed_jobs", force: true do |t|
     t.integer  "priority",   default: 0, null: false
@@ -91,7 +101,10 @@ ActiveRecord::Schema.define(version: 20141105112228) do
     t.string   "image_content_type"
     t.integer  "image_file_size"
     t.datetime "image_updated_at"
+    t.integer  "account_id"
   end
+
+  add_index "messages", ["account_id"], name: "index_messages_on_account_id"
 
   create_table "options", force: true do |t|
     t.integer  "index"
@@ -153,8 +166,10 @@ ActiveRecord::Schema.define(version: 20141105112228) do
     t.integer  "remote_asset_id"
     t.integer  "media_id"
     t.string   "language",           default: "en"
+    t.integer  "account_id"
   end
 
+  add_index "questions", ["account_id"], name: "index_questions_on_account_id"
   add_index "questions", ["media_id"], name: "index_questions_on_media_id"
   add_index "questions", ["step_id"], name: "index_questions_on_step_id"
 
@@ -177,8 +192,10 @@ ActiveRecord::Schema.define(version: 20141105112228) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "response_type"
+    t.integer  "account_id"
   end
 
+  add_index "responses", ["account_id"], name: "index_responses_on_account_id"
   add_index "responses", ["progress_id"], name: "index_responses_on_progress_id"
 
   create_table "results", force: true do |t|
@@ -209,8 +226,10 @@ ActiveRecord::Schema.define(version: 20141105112228) do
     t.text     "wrong_answer"
     t.text     "rebound"
     t.string   "action"
+    t.integer  "account_id"
   end
 
+  add_index "steps", ["account_id"], name: "index_steps_on_account_id"
   add_index "steps", ["next_step_id"], name: "index_steps_on_next_step_id"
 
   create_table "system_responses", force: true do |t|
@@ -227,8 +246,10 @@ ActiveRecord::Schema.define(version: 20141105112228) do
     t.integer  "remote_asset_id"
     t.integer  "media_id"
     t.string   "language",                       default: "en"
+    t.integer  "account_id"
   end
 
+  add_index "system_responses", ["account_id"], name: "index_system_responses_on_account_id"
   add_index "system_responses", ["media_id"], name: "index_system_responses_on_media_id"
   add_index "system_responses", ["step_id"], name: "index_system_responses_on_step_id"
 
