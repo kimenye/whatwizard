@@ -225,7 +225,7 @@ class HomeController < ApplicationController
     end
 
     def is_reset?
-      params[:text].downcase == ActsAsTenant.current_tenant.reset_code
+      params[:text].downcase == ActsAsTenant.current_tenant.reset_code.downcase
     end
 
     def is_text?
