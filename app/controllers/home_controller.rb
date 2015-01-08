@@ -141,7 +141,7 @@ class HomeController < ApplicationController
 
 
   def self.is_valid_date? str
-    puts ">>>>> Checking date #{str}"
+    logger.info(">>>>> Checking date #{str}")
     if str.length > 8
       begin
         date = Date.parse(str)
@@ -154,7 +154,9 @@ class HomeController < ApplicationController
       str = str.gsub(".","/")      
       begin
         date = Date.strptime(str, '%d/%m/%y')
-        return HomeController.is_over_18?(date)
+        is_valid = HomeController.is_over_18?(date)
+        logger.info("#{date} is #{is_valid}")
+        return is_valid
       rescue ArgumentError
         return false        
       end
@@ -289,9 +291,12 @@ class HomeController < ApplicationController
 
     def progress_step progress, text
       step = progress.step
+
       if step.step_type == "opt-in" || step.step_type == "dob"
         # if it is an opt-in i.e. yes or no
         contact = progress.contact
+
+        logger.info("Step type #{step.step_type}")
 
         if contact.opted_in.nil?
           contact.opted_in = is_valid?(step, text)
