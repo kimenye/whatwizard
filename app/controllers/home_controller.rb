@@ -253,6 +253,7 @@ class HomeController < ApplicationController
         # matches?(step.expected_answer, value)
         HomeController.matches_search?(step.expected_answer, value)
       elsif step.step_type == "dob"
+        logger.info "About to validate the date"
         return HomeController.is_valid_date?(value)
       end
     end
