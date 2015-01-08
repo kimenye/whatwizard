@@ -297,7 +297,7 @@ class HomeController < ApplicationController
         # if it is an opt-in i.e. yes or no
         contact = progress.contact
 
-        logger.info("Step type #{step.step_type}")
+        logger.info("Step type #{step.step_type} #{contact.opted_in.nil?}")
 
         if contact.opted_in.nil?
           contact.opted_in = is_valid?(step, text)
