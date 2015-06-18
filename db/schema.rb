@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150107144932) do
+ActiveRecord::Schema.define(version: 20150618090923) do
 
   create_table "accounts", force: true do |t|
     t.string "phone_number"
@@ -278,5 +278,14 @@ ActiveRecord::Schema.define(version: 20150107144932) do
 
   add_index "users", ["email"], name: "index_users_on_email", unique: true
   add_index "users", ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+
+  create_table "wizards", force: true do |t|
+    t.string   "start_keyword"
+    t.integer  "account_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  add_index "wizards", ["account_id"], name: "index_wizards_on_account_id"
 
 end

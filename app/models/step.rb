@@ -24,6 +24,7 @@ class Step < ActiveRecord::Base
   has_many :menus
   belongs_to :next_step, class_name: 'Step'
   belongs_to :account
+  belongs_to :wizard
 
   # acts_as_tenant(:account)
   
