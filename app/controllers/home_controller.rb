@@ -109,7 +109,7 @@ class HomeController < ApplicationController
           end
         end
       end
-    elsif !params.has_key?(:text) && !@contact.bot_complete      
+    elsif !params.has_key?(:text) && !params[:notification_type] == "ReadReceipt" && !params[:notification_type] == "DeliveryReceipt" && !@contact.bot_complete      
       @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
       if !@current_progress.nil?
         responses = [ get_localized_response(@current_progress.step, "multimedia").to_result(@contact) ]
@@ -380,6 +380,9 @@ class HomeController < ApplicationController
         if !step.next_step.nil?
           Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
           responses << get_next_question(step.next_step, @contact)
+
+          # send_message question.personalize(@contact), @contact.phone_number
+          send_message responses.last[:text], @contact.phone_number
         else
           # send the final response
           random_response = get_localized_response(step, "final")  
@@ -389,6 +392,7 @@ class HomeController < ApplicationController
             responses << random_response.to_result(@contact)
           end
           add_actions(responses, step, "final")
+          send_message responses.last[:text], @contact.phone_number
         end
         return responses
       elsif step.step_type == "exact"
