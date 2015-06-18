@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150618090923) do
+ActiveRecord::Schema.define(version: 20150618095320) do
 
   create_table "accounts", force: true do |t|
     t.string "phone_number"
@@ -115,9 +115,11 @@ ActiveRecord::Schema.define(version: 20150618090923) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "menu_id"
+    t.integer  "question_id"
   end
 
   add_index "options", ["menu_id"], name: "index_options_on_menu_id"
+  add_index "options", ["question_id"], name: "index_options_on_question_id"
 
   create_table "players", force: true do |t|
     t.string   "phone_number"
