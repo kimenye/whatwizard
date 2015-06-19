@@ -89,23 +89,26 @@ class HomeController < ApplicationController
         Contact.delete_all
         render json: { response: [ { type: "Response", text: "Send #{ActsAsTenant.current_tenant.start_code} to restart", phone_number: number }] }
       else
+        # wizard = Wizard.find_by(start_keyword: params[:text])
         @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
-        if @contact.bot_complete          
-          response = get_localized_response(@current_progress.step, "end")
-          responses = []
-          if !response.nil?
-            responses << response.to_result(@contact)
+        if @contact.bot_complete 
+          responses = [status: "Done"]
+          if !@current_progress.nil?
+            response = get_localized_response(@current_progress.step, "end")
+            if !response.nil?
+              responses << response.to_result(@contact)
+            end
           end
           render :json => { response: responses }        
         else
           
           if @current_progress.nil?
             # start the steps
-            response = start
+            response = start params[:text]
             render :json => { response: response } 
           else
             response = progress_step(@current_progress, params[:text])
-            render :json => { response: remove_nil(response) }
+            # render :json => { response: remove_nil(response) }
           end
         end
       end
@@ -189,14 +192,17 @@ class HomeController < ApplicationController
       [{ type: "Response", text: text, phone_number: phone_number }]
     end
 
-    def start
-      first_step = Step.find_by_order_index(0)      
+    def start start_keyword
+      first_step = Wizard.find_by(start_keyword: start_keyword).steps.first
       if !first_step.nil?
         question = get_localized_question(first_step)
         if !question.nil?
           Progress.create! step_id: first_step.id, contact_id: @contact.id
-
-          send_message question.personalize(@contact), @contact.phone_number
+          message = question.personalize(@contact)
+          if first_step.step_type == "menu"
+            message += "\n#{question.options_text}"
+          end
+          send_message message, @contact.phone_number
 
           return [ question.to_result(@contact) ]
         end
@@ -292,6 +298,7 @@ class HomeController < ApplicationController
 
     def progress_step progress, text
       step = progress.step
+      question = step.questions.first
 
       if step.step_type == "opt-in" || step.step_type == "dob"
         # if it is an opt-in i.e. yes or no
@@ -401,6 +408,37 @@ class HomeController < ApplicationController
           responses = [get_localized_response(step, "invalid").to_result(@contact)]
         end
         return responses
+      elsif step.step_type == "menu"
+        person = progress.contact
+        if !Option.is_valid?(question, text)
+          responses = [{ type: "Response", text: get_localized_response(step, "invalid").text, phone_number: person.phone_number }]
+
+          options_txt = question.options_text
+          if !options_txt.nil?
+            responses << { type: "Response", text: options_text, phone_number: person.phone_number }
+          end
+          return responses
+
+        else
+          next_step = step.next_step
+          random = get_localized_response(step, "valid")
+          
+          if !random.nil?
+            response = { type: "Response", text: random.text, phone_number: person.phone_number }
+          end
+
+          if !next_step.nil?
+            question = get_random(next_step.questions)
+            Progress.create! step_id: next_step.id, player_id: person.id, contact_id: person.id
+            message = "#{question.text}\n#{question.options_text}"
+            send_message message, @contact.phone_number
+            return [response, { type: "Question", text: message, phone_number: person.phone_number } ]
+          else
+            send_message "Thanks for your time.", @contact.phone_number
+            @contact.update(bot_complete: true)
+            return [response]
+          end
+        end
       else
         # yes-no
         responses = []
