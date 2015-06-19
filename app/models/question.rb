@@ -41,4 +41,8 @@ class Question < ActiveRecord::Base
   def to_result contact
   	{ type: "Question", text: personalize(contact), phone_number: contact.phone_number }
   end
+
+  def options_text
+    options.collect { |opt| "#{opt.key}. #{opt.text}" }.join("\r\n")    
+  end
 end

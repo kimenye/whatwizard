@@ -38,7 +38,8 @@ class Message < ActiveRecord::Base
 	    	    token = account.auth_token
 
 	    	    logger.info "Sending ... #{{ token: token, phone_number: phone_number, text: text, thread: true }}"
-	        	response = HTTParty.post(url, body: { token: token, phone_number: phone_number, text: text, thread: true }, debug_output: $stdout)
+	    	    response = HTTParty.post("#{url}?token=#{token}", body: {phone_number: phone_number, text: text, thread: true}, debug_output: $stdout)
+	        	# response = HTTParty.post(url, body: { token: token, phone_number: phone_number, text: text, thread: true }, debug_output: $stdout)
 
 	        	# puts "#{response}"
 	        	logger.info "Received #{response.parsed_response}"
@@ -65,5 +66,5 @@ class Message < ActiveRecord::Base
         	m.save!
       	end
 	end
-	handle_asynchronously :deliver
+	# handle_asynchronously :deliver
 end
