@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150618095320) do
+ActiveRecord::Schema.define(version: 20150619085715) do
 
   create_table "accounts", force: true do |t|
     t.string "phone_number"
@@ -230,10 +230,12 @@ ActiveRecord::Schema.define(version: 20150618095320) do
     t.text     "rebound"
     t.string   "action"
     t.integer  "account_id"
+    t.integer  "wizard_id"
   end
 
   add_index "steps", ["account_id"], name: "index_steps_on_account_id"
   add_index "steps", ["next_step_id"], name: "index_steps_on_next_step_id"
+  add_index "steps", ["wizard_id"], name: "index_steps_on_wizard_id"
 
   create_table "system_responses", force: true do |t|
     t.text     "text",               limit: 255
