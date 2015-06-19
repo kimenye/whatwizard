@@ -32,7 +32,7 @@ RailsAdmin.config do |config|
     config.excluded_models << Progress
     config.excluded_models << Media
     config.excluded_models << ResponseAction
-    config.excluded_models << Option
+    # config.excluded_models << Option
     config.excluded_models << Language
     # config.excluded_models << Menu
     # config.excluded_models << User
