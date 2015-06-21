@@ -22,7 +22,7 @@ class HomeController < ApplicationController
           
           if @current_progress.nil?
             # start the steps
-            response = start
+            response = start params[:text]
             # render :json => { response: response } 
           else
             if !is_last?
@@ -193,7 +193,7 @@ class HomeController < ApplicationController
     end
 
     def start start_keyword
-      wizard = Wizard.find_by(start_keyword: start_keyword)
+      wizard = Wizard.where('start_keyword like ?', start_keyword).first
       first_step = wizard.steps.first
       if !first_step.nil?
         question = get_localized_question(first_step)
@@ -205,7 +205,7 @@ class HomeController < ApplicationController
           end
           send_message message, @contact.phone_number
 
-          return [ message ]
+          return [ question.to_result(@contact) ]
         end
       end
     end
@@ -414,10 +414,6 @@ class HomeController < ApplicationController
         if !Option.is_valid?(question, text)
           responses = [{ type: "Response", text: get_localized_response(step, "invalid").text, phone_number: person.phone_number }]
 
-          options_txt = question.options_text
-          if !options_txt.nil?
-            responses << { type: "Response", text: question.options_text, phone_number: person.phone_number }
-          end
           return responses
         else
           next_step = step.next_step
@@ -434,7 +430,7 @@ class HomeController < ApplicationController
             send_message message, @contact.phone_number
             return [response, { type: "Question", text: message, phone_number: person.phone_number } ]
           else
-            send_message "Thanks for your time.", @contact.phone_number
+            send_message response[:text], @contact.phone_number
             @contact.update(bot_complete: true)
             return [response]
           end
