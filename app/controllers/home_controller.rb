@@ -92,7 +92,7 @@ class HomeController < ApplicationController
         # wizard = Wizard.find_by(start_keyword: params[:text])
         @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
         if @contact.bot_complete 
-          responses = [status: "Done"]
+          responses = []
           if !@current_progress.nil?
             response = get_localized_response(@current_progress.step, "end")
             if !response.nil?
@@ -108,7 +108,7 @@ class HomeController < ApplicationController
             render :json => { response: response } 
           else
             response = progress_step(@current_progress, params[:text])
-            # render :json => { response: remove_nil(response) }
+            render :json => { response: remove_nil(response) }
           end
         end
       end
@@ -193,7 +193,8 @@ class HomeController < ApplicationController
     end
 
     def start start_keyword
-      first_step = Wizard.find_by(start_keyword: start_keyword).steps.first
+      wizard = Wizard.find_by(start_keyword: start_keyword)
+      first_step = wizard.steps.first
       if !first_step.nil?
         question = get_localized_question(first_step)
         if !question.nil?
@@ -204,7 +205,7 @@ class HomeController < ApplicationController
           end
           send_message message, @contact.phone_number
 
-          return [ question.to_result(@contact) ]
+          return [ message ]
         end
       end
     end
@@ -415,10 +416,9 @@ class HomeController < ApplicationController
 
           options_txt = question.options_text
           if !options_txt.nil?
-            responses << { type: "Response", text: options_text, phone_number: person.phone_number }
+            responses << { type: "Response", text: question.options_text, phone_number: person.phone_number }
           end
           return responses
-
         else
           next_step = step.next_step
           random = get_localized_response(step, "valid")
