@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150619085715) do
+ActiveRecord::Schema.define(version: 20150622142415) do
 
   create_table "accounts", force: true do |t|
     t.string "phone_number"
@@ -288,6 +288,7 @@ ActiveRecord::Schema.define(version: 20150619085715) do
     t.integer  "account_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "name"
   end
 
   add_index "wizards", ["account_id"], name: "index_wizards_on_account_id"
