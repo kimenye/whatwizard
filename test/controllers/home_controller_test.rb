@@ -29,8 +29,9 @@ class HomeControllerTest < ActionController::TestCase
   end
 
   test "Should use the default language if the contact has not specified one yet" do
-    next_step = Step.create! name: "Next", step_type: "dob", order_index: 1
-    opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0, next_step: next_step
+    wizard = Wizard.create! name: 'Test', start_keyword: '01/11/1986'
+    next_step = Step.create! name: "Next", step_type: "dob", order_index: 1, wizard: wizard
+    opt_step = Step.create! name: "Age Gate", step_type: "dob", order_index: 0, next_step: next_step, wizard: wizard
     eng_qn = Question.create! text: "Hello {{contact_name}}.", step_id: opt_step.id, language: "en"
     swa_qn = Question.create! text: "Habari {{contact_name}}", step_id: opt_step.id, language: "swa"
     swa_valid = SystemResponse.create! text: "Karibu {{contact_name}}", step_id: opt_step.id, language: "swa", response_type: "valid"
