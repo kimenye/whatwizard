@@ -194,19 +194,25 @@ class HomeController < ApplicationController
 
     def start start_keyword
       wizard = Wizard.where('start_keyword like ?', start_keyword).first
-      first_step = wizard.steps.first
-      if !first_step.nil?
-        question = get_localized_question(first_step)
-        if !question.nil?
-          Progress.create! step_id: first_step.id, contact_id: @contact.id
-          message = question.personalize(@contact)
-          if first_step.step_type == "menu"
-            message += "\n#{question.options_text}"
-          end
-          send_message message, @contact.phone_number
+      if !wizard.nil?
+        first_step = wizard.steps.first
+        if !first_step.nil?
+          question = get_localized_question(first_step)
+          if !question.nil?
+            Progress.create! step_id: first_step.id, contact_id: @contact.id
+            message = question.personalize(@contact)
+            if first_step.step_type == "menu"
+              message += "\n#{question.options_text}"
+            end
+            send_message message, @contact.phone_number
 
-          return [ question.to_result(@contact) ]
+            return [ question.to_result(@contact) ]
+          end
         end
+      else
+        error = "No wizard with the start keyword '#{start_keyword}' exists. Please try again."
+        send_message error, @contact.phone_number
+        return { error: error }
       end
     end
 
