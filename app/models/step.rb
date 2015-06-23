@@ -40,4 +40,29 @@ class Step < ActiveRecord::Base
   def action_enum
     [['Add to List', 'add-to-list'], ['End Conversation', 'end-conversation']]
   end
+
+  def self.is_valid_date? str
+    if str.length > 8
+      begin
+        date = Date.parse(str)
+        return self.is_over_18?(date)
+      rescue ArgumentError
+        return false
+      end
+    else
+      str = str.gsub("-","/")      
+      str = str.gsub(".","/")      
+      begin
+        date = Date.strptime(str, '%d/%m/%y')
+        is_valid = self.is_over_18?(date)
+        return is_valid
+      rescue ArgumentError
+        return false        
+      end
+    end    
+  end
+
+  def self.is_over_18? dt
+    (Date.today - dt).to_i / 365 >= 18
+  end
 end
