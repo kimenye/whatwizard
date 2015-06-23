@@ -15,4 +15,7 @@ class Wizard < ActiveRecord::Base
   belongs_to :account
   acts_as_tenant(:account)
   has_many :steps
+
+  validates_uniqueness_of :start_keyword, scope: :account_id
+  validates_uniqueness_of :reset_keyword, scope: :account_id
 end

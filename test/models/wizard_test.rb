@@ -15,10 +15,25 @@ require "test_helper"
 
 describe Wizard do
   before do
-    @wizard = Wizard.new
+    @wizard = Wizard.new    
   end
 
   it "must be valid" do
     @wizard.valid?.must_equal true
+  end
+
+  it "checks that a wizard has a unique start and reset per account" do
+    account = Account.create! phone_number: '254712345678'
+    account2 = Account.create! phone_number: '254787654321'
+
+    wizard = Wizard.new(start_keyword: 'ABC', account: account)
+    wizard.valid?.must_equal true
+    wizard.save!
+
+    wizard2 = Wizard.new(start_keyword: 'ABC', account: account)
+    wizard2.valid?.must_equal false
+
+    wizard2.account = account2
+    wizard2.valid?.must_equal true
   end
 end
