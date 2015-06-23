@@ -45,4 +45,8 @@ class Question < ActiveRecord::Base
   def options_text
     options.collect { |opt| "#{opt.key}. #{opt.text}" }.join("\r\n")    
   end
+
+  def to_message contact
+    personalize(contact)
+  end
 end

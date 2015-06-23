@@ -33,6 +33,14 @@ class Step < ActiveRecord::Base
   validates :step_type, presence: true
   validates :name, presence: true
 
+  def get_random records
+    records[rand(records.length)]
+  end
+
+  def get_question
+    question = get_random(questions)    
+  end
+
   def step_type_enum
   	[['Date of Birth','dob'], ['Opt In', 'opt-in'], ['Yes or No', 'yes-no'], ['Numeric', 'numeric'], ['Entry', 'serial'], ['Free Text', 'free-text'], ['Menu', 'menu'], ['Exact', 'exact']]
   end

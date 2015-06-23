@@ -18,4 +18,22 @@ class Wizard < ActiveRecord::Base
 
   validates_uniqueness_of :start_keyword, scope: :account_id
   validates_uniqueness_of :reset_keyword, scope: :account_id
+
+
+  def start contact
+    first_step = steps.first
+    progress = Progress.create! step: first_step, contact: contact
+
+    question = first_step.get_question
+
+    { progress: progress.id, message: question.to_message(contact) }
+  end
+
+  def self.get_starting_wizards start
+    Wizard.where('start_keyword like ? ', start)
+  end
+
+  def self.get_reset_wizards reset_keyword
+    Wizard.where('reset_keyword like ? ', reset_keyword)
+  end
 end

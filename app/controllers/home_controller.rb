@@ -1,173 +1,178 @@
 class HomeController < ApplicationController
   skip_before_action :verify_authenticity_token 
-  before_action :set_contact, only: [:wizard, :wizard_new]
-  after_action :record_response, only: [:wizard, :wizard_new]
+  before_action :set_contact, only: [:wizard]
+  after_action :record_response, only: [:wizard]
 
-  def wizard_new
-    # puts "#{params}"
-    if is_text?
-      if is_reset?
-        response = reset        
-      else
-        @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
-        if @contact.bot_complete          
-          rsp = get_localized_response(@current_progress.step, "end")
-          responses = []
-          if !response.nil?
-            responses << rsp.to_result(@contact)
-          end
-          # render :json => { response: responses }        
-          response = responses
-        else
+  # def wizard_new
+  #   # puts "#{params}"
+  #   if is_text?
+  #     if is_reset?
+  #       response = reset        
+  #     else
+  #       @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+  #       if @contact.bot_complete          
+  #         rsp = get_localized_response(@current_progress.step, "end")
+  #         responses = []
+  #         if !response.nil?
+  #           responses << rsp.to_result(@contact)
+  #         end
+  #         # render :json => { response: responses }        
+  #         response = responses
+  #       else
           
-          if @current_progress.nil?
-            # start the steps
-            response = start params[:text]
-            # render :json => { response: response } 
-          else
-            if !is_last?
-              response = remove_nil(progress_step(@current_progress, params[:text]))
-              send_responses response
-            else
-              # the last step
-              response = get_localized_response(@current_progress.step, "end")
-              @contact.bot_complete = true
-              @contact.save!
-              if !response.nil?
-                send_responses [response]
-              end
-            end
-            # render :json => { response: remove_nil(response) }
-          end
-        end
-      end
-    elsif is_receipt?
-      message = Message.find_by(external_id: params[:id])
-      if !message.nil?
-        message.received = true
-        message.save!
-      end
-      response = nil
-    elsif is_image?
-      if !@contact.bot_complete
-        current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
-        if !current_progress.nil?
-          responses = [ get_localized_response(current_progress.step, "multimedia").to_result(@contact) ]
+  #         if @current_progress.nil?
+  #           # start the steps
+  #           response = start params[:text]
+  #           # render :json => { response: response } 
+  #         else
+  #           if !is_last?
+  #             response = remove_nil(progress_step(@current_progress, params[:text]))
+  #             send_responses response
+  #           else
+  #             # the last step
+  #             response = get_localized_response(@current_progress.step, "end")
+  #             @contact.bot_complete = true
+  #             @contact.save!
+  #             if !response.nil?
+  #               send_responses [response]
+  #             end
+  #           end
+  #           # render :json => { response: remove_nil(response) }
+  #         end
+  #       end
+  #     end
+  #   elsif is_receipt?
+  #     message = Message.find_by(external_id: params[:id])
+  #     if !message.nil?
+  #       message.received = true
+  #       message.save!
+  #     end
+  #     response = nil
+  #   elsif is_image?
+  #     if !@contact.bot_complete
+  #       current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+  #       if !current_progress.nil?
+  #         responses = [ get_localized_response(current_progress.step, "multimedia").to_result(@contact) ]
           
-          if !current_progress.step.next_step.nil?
-            Progress.create! step_id: current_progress.step.next_step_id, contact_id: @contact.id  
-            responses << get_localized_question(current_progress.step.next_step).to_result(@contact)
-            add_actions(responses, current_progress.step, "valid")
-          else
-            # if there is nothing after this then finish
-            random_response = get_localized_response(current_progress.step, "final")
-            @contact.bot_complete = true
-            @contact.save!
-            if !random_response.nil?
-              responses << random_response.to_result(@contact)
-            end
-            add_actions(responses, current_progress.step, "valid")
-          end
+  #         if !current_progress.step.next_step.nil?
+  #           Progress.create! step_id: current_progress.step.next_step_id, contact_id: @contact.id  
+  #           responses << get_localized_question(current_progress.step.next_step).to_result(@contact)
+  #           add_actions(responses, current_progress.step, "valid")
+  #         else
+  #           # if there is nothing after this then finish
+  #           random_response = get_localized_response(current_progress.step, "final")
+  #           @contact.bot_complete = true
+  #           @contact.save!
+  #           if !random_response.nil?
+  #             responses << random_response.to_result(@contact)
+  #           end
+  #           add_actions(responses, current_progress.step, "valid")
+  #         end
 
-          # render :json => { response: remove_nil(responses) }
-          response = remove_nil(responses)
-          send_responses response
-        else
-          response = start
-          render :json => { response: remove_nil(response) }     
-        end
-      end
-    end
-    render json: { response: response }
-  end
+  #         # render :json => { response: remove_nil(responses) }
+  #         response = remove_nil(responses)
+  #         send_responses response
+  #       else
+  #         response = start
+  #         render :json => { response: remove_nil(response) }     
+  #       end
+  #     end
+  #   end
+  #   render json: { response: response }
+  # end
 
   def wizard
-    if params.has_key?(:text)
-      if params[:text].downcase == ActsAsTenant.current_tenant.reset_code.downcase
-        number = @contact.phone_number
-        Progress.where(contact_id: @contact.id).destroy_all
-        Contact.delete_all
-        render json: { response: [ { type: "Response", text: "Send #{ActsAsTenant.current_tenant.start_code} to restart", phone_number: number }] }
-      else
-        # wizard = Wizard.find_by(start_keyword: params[:text])
-        @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
-        if @contact.bot_complete 
-          responses = []
-          if !@current_progress.nil?
-            response = get_localized_response(@current_progress.step, "end")
-            if !response.nil?
-              responses << response.to_result(@contact)
-            end
-          end
-          render :json => { response: responses }        
-        else
-          
-          if @current_progress.nil?
-            # start the steps
-            response = start params[:text]
-            render :json => { response: response } 
-          else
-            response = progress_step(@current_progress, params[:text])
-            render :json => { response: remove_nil(response) }
-          end
-        end
-      end
-    elsif !params.has_key?(:text) && !params[:notification_type] == "ReadReceipt" && !params[:notification_type] == "DeliveryReceipt" && !@contact.bot_complete      
-      @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
-      if !@current_progress.nil?
-        responses = [ get_localized_response(@current_progress.step, "multimedia").to_result(@contact) ]
-        
-        if !@current_progress.step.next_step.nil?
-          Progress.create! step_id: @current_progress.step.next_step_id, contact_id: @contact.id  
-          responses << get_localized_question(@current_progress.step.next_step).to_result(@contact)
-          add_actions(responses, @current_progress.step, "valid")
-        else
-          # if there is nothing after this then finish
-          random_response = get_localized_response(current_progress.step, "final")
-          @contact.bot_complete = true
-          @contact.save!
-          if !random_response.nil?
-            responses << random_response.to_result(@contact)
-          end
-          add_actions(responses, current_progress.step, "valid")
-        end
+    if is_text?
+      
+      # Check progress first in case an answer of one of the steps is a start of another wizard?
+      @current = Progress.where(contact_id: @contact.id).order(id: :desc).first
+      text = params[:text]
 
-        render :json => { response: remove_nil(responses) }
-      else
-        response = start
-        render :json => { response: remove_nil(response) }     
+      if @current.nil?
+        # check to see if there is any wizard matching that keyword
+        # wizard = Wizard
+
+        wizards = Wizard.get_starting_wizards(text)
+        if !wizards.empty?
+          
+          # only ever deal with the first wizard
+          wizard = wizards.first
+          response = wizard.start(@contact)
+
+          render json: response
+
+        else
+          render json: { ignore: true }
+        end
       end
-    else
-      render :json => { response: [] }
+
     end
   end
+
+  # def wizard
+  #   if params.has_key?(:text)
+  #     if params[:text].downcase == ActsAsTenant.current_tenant.reset_code.downcase
+  #       number = @contact.phone_number
+  #       Progress.where(contact_id: @contact.id).destroy_all
+  #       Contact.delete_all
+  #       render json: { response: [ { type: "Response", text: "Send #{ActsAsTenant.current_tenant.start_code} to restart", phone_number: number }] }
+  #     else
+  #       # wizard = Wizard.find_by(start_keyword: params[:text])
+  #       @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+  #       if @contact.bot_complete 
+  #         responses = []
+  #         if !@current_progress.nil?
+  #           response = get_localized_response(@current_progress.step, "end")
+  #           if !response.nil?
+  #             responses << response.to_result(@contact)
+  #           end
+  #         end
+  #         render :json => { response: responses }        
+  #       else
+          
+  #         if @current_progress.nil?
+  #           # start the steps
+  #           response = start params[:text]
+  #           render :json => { response: response } 
+  #         else
+  #           response = progress_step(@current_progress, params[:text])
+  #           render :json => { response: remove_nil(response) }
+  #         end
+  #       end
+  #     end
+  #   elsif !params.has_key?(:text) && !params[:notification_type] == "ReadReceipt" && !params[:notification_type] == "DeliveryReceipt" && !@contact.bot_complete      
+  #     @current_progress = Progress.where("contact_id =?", @contact.id).order(id: :asc).last
+  #     if !@current_progress.nil?
+  #       responses = [ get_localized_response(@current_progress.step, "multimedia").to_result(@contact) ]
+        
+  #       if !@current_progress.step.next_step.nil?
+  #         Progress.create! step_id: @current_progress.step.next_step_id, contact_id: @contact.id  
+  #         responses << get_localized_question(@current_progress.step.next_step).to_result(@contact)
+  #         add_actions(responses, @current_progress.step, "valid")
+  #       else
+  #         # if there is nothing after this then finish
+  #         random_response = get_localized_response(current_progress.step, "final")
+  #         @contact.bot_complete = true
+  #         @contact.save!
+  #         if !random_response.nil?
+  #           responses << random_response.to_result(@contact)
+  #         end
+  #         add_actions(responses, current_progress.step, "valid")
+  #       end
+
+  #       render :json => { response: remove_nil(responses) }
+  #     else
+  #       response = start
+  #       render :json => { response: remove_nil(response) }     
+  #     end
+  #   else
+  #     render :json => { response: [] }
+  #   end
+  # end
 
 
   def self.is_valid_date? str
-    logger.info(">>>>> Checking date #{str}")
-    if str.length > 8
-      begin
-        date = Date.parse(str)
-        return HomeController.is_over_18?(date)
-      rescue ArgumentError
-        return false
-      end
-    else
-      str = str.gsub("-","/")      
-      str = str.gsub(".","/")      
-      begin
-        date = Date.strptime(str, '%d/%m/%y')
-        is_valid = HomeController.is_over_18?(date)
-        logger.info("#{date} is #{is_valid}")
-        return is_valid
-      rescue ArgumentError
-        return false        
-      end
-    end    
-  end
-
-  def self.is_over_18? dt
-    (Date.today - dt).to_i / 365 >= 18
+    Step.is_valid_date? str
   end
 
   def self.matches_search? expected_answer, value
