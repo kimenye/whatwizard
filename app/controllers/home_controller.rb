@@ -88,24 +88,46 @@ class HomeController < ApplicationController
       @current = Progress.where(contact_id: @contact.id).order(id: :desc).first
       text = params[:text]
 
-      if @current.nil?
-        # check to see if there is any wizard matching that keyword
-        # wizard = Wizard
-
-        wizards = Wizard.get_starting_wizards(text)
-        if !wizards.empty?
-          
-          # only ever deal with the first wizard
-          wizard = wizards.first
-          response = wizard.start(@contact)
-
-          render json: response
-
+      wizards = Wizard.get_reset_wizards(text)
+      if !wizards.empty?
+        wizard = wizards.first
+        number = @contact.phone_number
+        Progress.where(contact_id: @contact.id).destroy_all
+        @contact.delete
+        render json: { response: [ { type: "Response", text: "Send #{wizard.start_keyword} to restart", phone_number: number }] }
+      else
+        if @contact.bot_complete 
+          responses = []
+          if !@current.nil?
+            response = get_localized_response(@current.step, "end")
+            if !response.nil?
+              responses << response.to_result(@contact)
+            end
+          end
+          render :json => { response: responses }        
         else
-          render json: { ignore: true }
+          if @current.nil?
+            # check to see if there is any wizard matching that keyword
+            # wizard = Wizard
+
+            wizards = Wizard.get_starting_wizards(text)
+            if !wizards.empty?
+              
+              # only ever deal with the first wizard
+              wizard = wizards.first
+              response = wizard.start(@contact)
+
+              render json: response
+
+            else
+              render json: { ignore: true }
+            end
+          else
+            response = progress_step(@current, params[:text])
+            render :json => { response: remove_nil(response) }
+          end
         end
       end
-
     end
   end
 
