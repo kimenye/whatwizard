@@ -33,7 +33,7 @@ class Message < ActiveRecord::Base
 			external_id = nil
 
 			if message_type == "Text"
-	    	    url = "#{ENV['API_URL']}/send"
+	    	    url = "#{ENV['API_URL']}/base/send"
 
 	    	    token = account.auth_token
 
