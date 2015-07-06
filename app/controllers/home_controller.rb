@@ -94,7 +94,9 @@ class HomeController < ApplicationController
         number = @contact.phone_number
         Progress.where(contact_id: @contact.id).destroy_all
         @contact.delete
-        render json: { response: [ { type: "Response", text: "Send #{wizard.start_keyword} to restart", phone_number: number }] }
+        response = [{ type: "Response", text: "Send #{wizard.start_keyword} to restart", phone_number: number }]
+        send_message response.first[:text], @contact.phone_number
+        render json: { response: response }
       else
         if @contact.bot_complete 
           responses = []
@@ -116,15 +118,18 @@ class HomeController < ApplicationController
               # only ever deal with the first wizard
               wizard = wizards.first
               response = wizard.start(@contact)
-
-              render json: response
+              first_step = wizard.steps.first
+              question = get_next_question first_step, @contact
+              send_responses [response, question]
+              render json: [response, question]
 
             else
               render json: { ignore: true }
             end
           else
-            response = progress_step(@current, params[:text])
-            render :json => { response: remove_nil(response) }
+            response = remove_nil(progress_step(@current, params[:text]))
+            send_responses response
+            render :json => { response: response }
           end
         end
       end
@@ -421,9 +426,6 @@ class HomeController < ApplicationController
         if !step.next_step.nil?
           Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
           responses << get_next_question(step.next_step, @contact)
-
-          # send_message question.personalize(@contact), @contact.phone_number
-          send_message responses.last[:text], @contact.phone_number
         else
           # send the final response
           random_response = get_localized_response(step, "final")  
@@ -433,7 +435,6 @@ class HomeController < ApplicationController
             responses << random_response.to_result(@contact)
           end
           add_actions(responses, step, "final")
-          send_message responses.last[:text], @contact.phone_number
         end
         return responses
       elsif step.step_type == "exact"
@@ -453,19 +454,17 @@ class HomeController < ApplicationController
           random = get_localized_response(step, "valid")
           
           if !random.nil?
-            response = { type: "Response", text: random.text, phone_number: person.phone_number }
+            response = [{ type: "Response", text: random.text, phone_number: person.phone_number }]
           end
 
           if !next_step.nil?
             question = get_random(next_step.questions)
             Progress.create! step_id: next_step.id, player_id: person.id, contact_id: person.id
-            message = "#{question.text}\n#{question.options_text}"
-            send_message message, @contact.phone_number
-            return [response, { type: "Question", text: message, phone_number: person.phone_number } ]
+            q = get_next_question next_step, @contact
+            return [response, q]
           else
-            send_message response[:text], @contact.phone_number
             @contact.update(bot_complete: true)
-            return [response]
+            return response
           end
         end
       else
