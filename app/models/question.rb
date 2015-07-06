@@ -39,7 +39,12 @@ class Question < ActiveRecord::Base
   end
 
   def to_result contact
-  	{ type: "Question", text: personalize(contact), phone_number: contact.phone_number }
+    if step.step_type == "menu"
+      q = "#{personalize(contact)}\n#{options_text}"
+    else
+      q = personalize(contact)
+    end
+  	{ type: "Question", text: q, phone_number: contact.phone_number }
   end
 
   def options_text
