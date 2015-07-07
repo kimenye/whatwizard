@@ -118,7 +118,7 @@ class HomeController < ApplicationController
               # only ever deal with the first wizard
               wizard = wizards.first
               response = wizard.start(@contact)
-              first_step = wizard.steps.first
+              first_step = wizard.steps.last
               question = get_next_question first_step, @contact
               send_responses [response, question]
               render json: [response, question]
@@ -227,7 +227,7 @@ class HomeController < ApplicationController
     def start start_keyword
       wizard = Wizard.where('start_keyword like ?', start_keyword).first
       if !wizard.nil?
-        first_step = wizard.steps.first
+        first_step = wizard.steps.last
         if !first_step.nil?
           question = get_localized_question(first_step)
           if !question.nil?
