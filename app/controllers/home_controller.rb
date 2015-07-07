@@ -456,7 +456,7 @@ class HomeController < ApplicationController
           random = get_localized_response(step, "valid")
           
           if !random.nil?
-            response = [{ type: "Response", text: random.text, phone_number: person.phone_number }]
+            response = { type: "Response", text: random.text, phone_number: person.phone_number }
           end
 
           if !next_step.nil?
