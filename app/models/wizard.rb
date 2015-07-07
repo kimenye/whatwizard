@@ -21,7 +21,7 @@ class Wizard < ActiveRecord::Base
 
 
   def start contact
-    first_step = steps.first
+    first_step = steps.last
     progress = Progress.create! step: first_step, contact: contact
 
     question = first_step.get_question
@@ -30,10 +30,10 @@ class Wizard < ActiveRecord::Base
   end
 
   def self.get_starting_wizards start
-    Wizard.where('start_keyword like ? ', start)
+    Wizard.where('start_keyword ilike ? ', start)
   end
 
   def self.get_reset_wizards reset_keyword
-    Wizard.where('reset_keyword like ? ', reset_keyword)
+    Wizard.where('reset_keyword ilike ? ', reset_keyword)
   end
 end
