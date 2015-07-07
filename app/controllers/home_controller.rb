@@ -422,7 +422,8 @@ class HomeController < ApplicationController
       elsif step.step_type == "free-text"
         # random_response = get_random_response(step, "valid")
         random_response = get_localized_response(step, "valid")
-        responses = [ random_response.to_result(@contact) ]
+        responses = []
+        responses = [ random_response.to_result(@contact) ] if !random_response.nil?
         if !step.next_step.nil?
           Progress.create! step_id: step.next_step_id, contact_id: @contact.id  
           responses << get_next_question(step.next_step, @contact)
