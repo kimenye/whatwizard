@@ -64,10 +64,10 @@ Option.find_or_create_by! text: "Our server was average. Definitely room for imp
 Option.find_or_create_by! text: "Our server was horrible, please do something about it.", key: "4", step_id: service_quality.id, question_id: service_q.id
 Option.find_or_create_by! text: "Male", key: "1", step_id: gender.id, question_id: gender_q.id
 Option.find_or_create_by! text: "Female", key: "2", step_id: gender.id, question_id: gender_q.id
-Option.find_or_create_by! text: "Better luck next time (60%)", key: "1", scratch.id, question_id: scratch_q.id
-Option.find_or_create_by! text: "You have won a coffee on the house (30%)", key: "2", scratch.id, question_id: scratch_q.id
-Option.find_or_create_by! text: "You have won a meal voucher (remainder)", key: "3", scratch.id, question_id: scratch_q.id
-Option.find_or_create_by! text: "You have won a flight to Mombasa(1 winner per month)", key: "4", scratch.id, question_id: scratch_q.id
+Option.find_or_create_by! text: "Better luck next time", key: "1", question_id: scratch_q.id
+Option.find_or_create_by! text: "You have won a coffee on the house", key: "2", question_id: scratch_q.id
+Option.find_or_create_by! text: "You have won a meal voucher", key: "3", question_id: scratch_q.id
+Option.find_or_create_by! text: "You have won a flight to Mombasa", key: "4", question_id: scratch_q.id
 
 # SystemResponses
 
