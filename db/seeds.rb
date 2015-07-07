@@ -13,18 +13,18 @@ wizard = Wizard.find_or_create_by! name: "Artcaffe", start_keyword: "ARTCAFFE", 
 
 # Steps
 
-# scratch = Step.find_or_create_by! name: "Scratch Card", step_type: "menu", order_index: 17,  next_step_id: nil, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
-# email = Step.find_or_create_by! name: "Email", step_type: "free-text", order_index: 16,  next_step_id: scratch.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
-# dob = Step.find_or_create_by! name: "DOB", step_type: "dob", order_index: 15,  next_step_id: email.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
-# gender = Step.find_or_create_by! name: "Gender", step_type: "menu", order_index: 14,  next_step_id: dob.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
-# name = Step.find_or_create_by! name: "Name", step_type: "free-text", order_index: 13,  next_step_id: gender.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
-# competition = Step.find_or_create_by! name: "Competition", step_type: "yes-no", order_index: 12,  next_step_id: name.id, expected_answer: "Y", allow_continue: false, wrong_answer: "X", rebound: "", action: nil, account: account, wizard: wizard
-# more = Step.find_or_create_by! name: "More on Waiter", step_type: "free-text", order_index: 10,  next_step_id: competition.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
-# waiter = Step.find_or_create_by! name: "Waiter", step_type: "free-text", order_index: 11,  next_step_id: more.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
-# service_quality = Step.find_or_create_by! name: "Quality of Service", step_type: "menu", order_index: 8,  next_step_id: waiter.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
-# food_quality = Step.find_or_create_by! name: "Quality of Food", step_type: "menu", order_index: 9,  next_step_id: service_quality.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
-# frequency = Step.find_or_create_by! name: "Frequency", step_type: "menu", order_index: 6,  next_step_id: food_quality.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
-# branch = Step.find_or_create_by! name: "Branch", step_type: "menu", order_index: 7,  next_step_id: frequency.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
+scratch = Step.find_or_create_by! name: "Scratch Card", step_type: "menu", order_index: 17,  next_step_id: nil, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
+email = Step.find_or_create_by! name: "Email", step_type: "free-text", order_index: 16,  next_step_id: scratch.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
+dob = Step.find_or_create_by! name: "DOB", step_type: "dob", order_index: 15,  next_step_id: email.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
+gender = Step.find_or_create_by! name: "Gender", step_type: "menu", order_index: 14,  next_step_id: dob.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
+name = Step.find_or_create_by! name: "Name", step_type: "free-text", order_index: 13,  next_step_id: gender.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
+competition = Step.find_or_create_by! name: "Competition", step_type: "yes-no", order_index: 12,  next_step_id: name.id, expected_answer: "Y", allow_continue: false, wrong_answer: "X", rebound: "", action: nil, account: account, wizard: wizard
+more = Step.find_or_create_by! name: "More on Waiter", step_type: "free-text", order_index: 10,  next_step_id: competition.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
+waiter = Step.find_or_create_by! name: "Waiter", step_type: "free-text", order_index: 11,  next_step_id: more.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
+service_quality = Step.find_or_create_by! name: "Quality of Service", step_type: "menu", order_index: 8,  next_step_id: waiter.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
+food_quality = Step.find_or_create_by! name: "Quality of Food", step_type: "menu", order_index: 9,  next_step_id: service_quality.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
+frequency = Step.find_or_create_by! name: "Frequency", step_type: "menu", order_index: 6,  next_step_id: food_quality.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
+branch = Step.find_or_create_by! name: "Branch", step_type: "menu", order_index: 7,  next_step_id: frequency.id, expected_answer: "", allow_continue: false, wrong_answer: "", rebound: "", action: nil, account: account, wizard: wizard
 
 # Questions
 
