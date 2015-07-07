@@ -20,7 +20,7 @@ class Option < ActiveRecord::Base
 
 	def self.get_valid_option question, text
     question.options.each do |opt|
-      if opt.key.downcase == text.downcase
+      if opt.key.downcase == text.downcase || opt.text.downcase == text.downcase
         return opt
       end
     end
