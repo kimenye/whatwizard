@@ -249,6 +249,7 @@ class HomeController < ApplicationController
     end
 
     def send_responses responses
+      logger.info(">>>>>>>>>>>>>>>> Here are the responses to send: #{responses}")
       responses.each do |response|
         if response[:type] != "ImageResponse"
           send_message response[:text], @contact.phone_number
