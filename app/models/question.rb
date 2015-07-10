@@ -54,4 +54,8 @@ class Question < ActiveRecord::Base
   def to_message contact
     personalize(contact)
   end
+
+  def name
+    step.try(:name)
+  end
 end

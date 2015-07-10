@@ -34,8 +34,8 @@ RailsAdmin.config do |config|
     # config.excluded_models << ResponseAction
     # config.excluded_models << Option
     config.excluded_models << Language
-    # config.excluded_models << Menu
-    # config.excluded_models << User
+    config.excluded_models << Menu
+    config.excluded_models << User
     config.excluded_models << Result
     config.excluded_models << Match
     config.excluded_models << Player
