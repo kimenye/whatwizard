@@ -30,10 +30,10 @@ class Wizard < ActiveRecord::Base
   end
 
   def self.get_starting_wizards start
-    Wizard.where('start_keyword ilike ? ', start)
+    Wizard.where('start_keyword like ? ', start)
   end
 
   def self.get_reset_wizards reset_keyword
-    Wizard.where('reset_keyword ilike ? ', reset_keyword)
+    Wizard.where('reset_keyword like ? ', reset_keyword)
   end
 end
