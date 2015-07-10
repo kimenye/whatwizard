@@ -21,7 +21,7 @@ class Wizard < ActiveRecord::Base
 
 
   def start contact
-    first_step = steps.last
+    first_step = steps.order(order_index: :asc).first
     progress = Progress.create! step: first_step, contact: contact
 
     question = first_step.get_question
