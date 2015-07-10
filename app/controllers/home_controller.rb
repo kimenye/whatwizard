@@ -133,6 +133,8 @@ class HomeController < ApplicationController
           end
         end
       end
+    else
+      render :json => { success: true }
     end
   end
 
