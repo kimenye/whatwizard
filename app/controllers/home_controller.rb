@@ -118,7 +118,7 @@ class HomeController < ApplicationController
               # only ever deal with the first wizard
               wizard = wizards.first
               response = wizard.start(@contact)
-              first_step = wizard.steps.last
+              first_step = wizard.steps.order(order_index: :asc).first
               question = get_next_question first_step, @contact
               send_responses [response, question]
               render json: [response, question]
