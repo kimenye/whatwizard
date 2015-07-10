@@ -39,7 +39,7 @@ end
 
 group :production do
   gem 'mysql2', '0.3.15'
-  gem 'pg'
+  # gem 'pg'
 end
 
 gem 'minitest-rails'
