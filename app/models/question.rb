@@ -48,7 +48,7 @@ class Question < ActiveRecord::Base
   end
 
   def options_text
-    options.collect { |opt| "#{opt.key}. #{opt.text}" }.join("\r\n")    
+    options.order(index: :asc).collect { |opt| "#{opt.key}. #{opt.text}" }.join("\r\n")    
   end
 
   def to_message contact
