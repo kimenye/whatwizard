@@ -1,3 +1,22 @@
+# == Schema Information
+#
+# Table name: questions
+#
+#  id                 :integer          not null, primary key
+#  text               :text
+#  step_id            :integer
+#  created_at         :datetime
+#  updated_at         :datetime
+#  image_file_name    :string(255)
+#  image_content_type :string(255)
+#  image_file_size    :integer
+#  image_updated_at   :datetime
+#  remote_asset_id    :integer
+#  media_id           :integer
+#  language           :string(255)      default("en")
+#  account_id         :integer
+#
+
 require "test_helper"
 
 describe Question do
