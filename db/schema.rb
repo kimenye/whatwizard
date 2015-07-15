@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150715112928) do
+ActiveRecord::Schema.define(version: 20150715125223) do
 
   create_table "accounts", force: true do |t|
     t.string "phone_number"
@@ -184,7 +184,7 @@ ActiveRecord::Schema.define(version: 20150715112928) do
     t.integer  "step_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "delay"
+    t.integer  "delay_by"
   end
 
   add_index "response_actions", ["step_id"], name: "index_response_actions_on_step_id"
