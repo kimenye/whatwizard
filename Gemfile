@@ -23,6 +23,7 @@ gem 'delayed_job_active_record'
 gem 'daemons'
 gem 'annotate'
 gem 'rollbar'
+gem 'sidekiq'
 
 group :development do
   gem 'better_errors'
