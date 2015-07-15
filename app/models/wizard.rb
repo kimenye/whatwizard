@@ -26,6 +26,8 @@ class Wizard < ActiveRecord::Base
 
     question = first_step.get_question
 
+    WizardWorker.perform_async(self, contact)
+
     { progress: progress.id, message: question.to_message(contact) }
   end
 
