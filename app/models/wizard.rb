@@ -29,6 +29,17 @@ class Wizard < ActiveRecord::Base
     { progress: progress.id, message: question.to_message(contact) }
   end
 
+  def reset contact
+    phone_number = contact.phone_number
+    Progress.where(contact_id: contact.id).destroy_all
+    contact.delete
+    
+    text = "Send #{ActsAsTenant.current_tenant.start_code} to begin"
+    msg = Message.create! text: text, contact: contact
+    msg.deliver
+    [{ type: "Response", text: text, phone_number: phone_number }]
+  end
+
   def self.get_starting_wizards start
     Wizard.where('start_keyword like ? ', start)
   end
