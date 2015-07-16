@@ -27,7 +27,7 @@ class Wizard < ActiveRecord::Base
 
     question = first_step.get_question
 
-    WizardWorker.perform_async(self, contact)
+    WizardWorker.perform_in((self.restart_in * 60), self.id, contact.id, progress.id)
 
     { progress: progress.id, message: question.to_message(contact) }
   end
@@ -37,8 +37,8 @@ class Wizard < ActiveRecord::Base
     Progress.where(contact_id: contact.id).destroy_all
     contact.delete
     
-    text = "Send #{ActsAsTenant.current_tenant.start_code} to begin"
-    msg = Message.create! text: text, contact: contact
+    text = "Send #{start_keyword} to begin"
+    msg = Message.create! text: text, phone_number: phone_number, account: self.account, message_type: "Text"
     msg.deliver
     [{ type: "Response", text: text, phone_number: phone_number }]
   end
