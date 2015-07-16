@@ -24,6 +24,8 @@ gem 'daemons'
 gem 'annotate'
 gem 'rollbar'
 gem 'sidekiq'
+gem 'sinatra', require: false
+gem 'slim'
 
 group :development do
   gem 'better_errors'
