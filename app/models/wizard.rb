@@ -27,7 +27,7 @@ class Wizard < ActiveRecord::Base
 
     question = first_step.get_question
 
-    WizardWorker.perform_in((self.restart_in * 60), self.id, contact.id, progress.id)
+    WizardWorker.perform_in((self.restart_in * 60), progress.id)
 
     { progress: progress.id, message: question.to_message(contact) }
   end

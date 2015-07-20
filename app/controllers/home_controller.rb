@@ -130,7 +130,7 @@ class HomeController < ApplicationController
             wizard = @current.step.wizard
             response = remove_nil(progress_step(@current, params[:text]))
             current = Progress.where(contact_id: @contact.id).order(id: :desc).first
-            WizardWorker.perform_in((wizard.restart_in * 60), wizard.id, @contact.id, current.id)
+            WizardWorker.perform_in((wizard.restart_in * 60), current.id)
             send_responses response
             render :json => { response: response }
           end

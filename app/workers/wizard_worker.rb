@@ -2,9 +2,10 @@ class WizardWorker
 	include Sidekiq::Worker
 	sidekiq_options :queue => :wizard, :retry => false
 
-	def perform wizard_id, contact_id, progress_id
-		wizard = Wizard.find wizard_id
-		contact = Contact.find contact_id
+	def perform progress_id
+		progress = Progress.find progress_id
+		wizard = progress.step.wizard
+		contact = progress.contact
 
 		logger.info ">>>>>>>>>> Hello"
 
