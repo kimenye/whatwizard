@@ -23,6 +23,7 @@ class Step < ActiveRecord::Base
   has_many :questions
   has_many :contacts, through: :progress
   has_many :menus
+  has_many :options
   belongs_to :next_step, class_name: 'Step'
   belongs_to :account
   belongs_to :wizard
@@ -73,4 +74,13 @@ class Step < ActiveRecord::Base
   def self.is_over_18? dt
     (Date.today - dt).to_i / 365 >= 18
   end
+
+  def to_question
+    text = questions.first.text
+    if step_type == 'menu'
+      text += "\r\n\r\n" + options.order(:index).collect { |opt| "#{opt.key} #{opt.text}" }.join("\r\n")
+    end
+    text
+  end
+
 end

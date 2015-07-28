@@ -9,9 +9,12 @@
 #  updated_at    :datetime
 #  name          :string(255)
 #  reset_keyword :string(255)
+#  restart_in    :integer
+#  welcome_text  :text
 #
 
 taste:
   start_keyword: TASTE
   account: eatout
   reset_keyword: RESTART
+  welcome_text: Thank you for your interest in voting in this year's Taste People's Choice Awards! Cast your votes for your favourite restaurants by cuisine below.

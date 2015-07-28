@@ -30,4 +30,16 @@ describe Step do
     assert_equal true, Step.is_valid_date?("11-01-86")
     assert_equal false, Step.is_valid_date?("01/11/2006")
   end
+
+  test "Should get the correct question for a menu type" do
+    step = steps(:italian)
+    question = questions(:italian)
+
+    options = step.options.order(:index).collect { |opt| "#{opt.key} #{opt.text}" }.join("\r\n")
+
+    assert_equal 'menu', step.step_type
+    expected = "#{question.text}\r\n\r\n#{options}"
+
+    assert_equal expected, step.to_question
+  end
 end

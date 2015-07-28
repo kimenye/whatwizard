@@ -23,7 +23,9 @@ class VotingControllerTest < ActionController::TestCase
     post :wizard, { name: 'Trevor', phone_number: '254722123456', text: start, notification_type: 'MessageReceived', account: @phone_number }
     assert_response :success
 
-    expected = { success: true }
+    step_one = steps(:italian) 
+
+    expected = { success: true, responses: [ wizard.welcome_text, step_one.to_question ] }
     assert_equal expected.to_json, response.body
   end
 end

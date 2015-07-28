@@ -1,0 +1,26 @@
+# == Schema Information
+#
+# Table name: options
+#
+#  id          :integer          not null, primary key
+#  index       :integer
+#  text        :string(255)
+#  key         :string(255)
+#  step_id     :integer
+#  created_at  :datetime
+#  updated_at  :datetime
+#  menu_id     :integer
+#  question_id :integer
+#
+
+ital_360:
+  step: italian
+  key: 1
+  text: 360 Degrees Artisan Pizza
+  index: 0
+
+ital_fire:
+  step: italian
+  key: 2
+  text: Urban Eatery
+  index: 1

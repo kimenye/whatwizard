@@ -9,6 +9,8 @@
 #  updated_at    :datetime
 #  name          :string(255)
 #  reset_keyword :string(255)
+#  restart_in    :integer
+#  welcome_text  :text
 #
 
 class Wizard < ActiveRecord::Base

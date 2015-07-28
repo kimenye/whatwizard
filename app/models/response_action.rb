@@ -10,7 +10,7 @@
 #  step_id       :integer
 #  created_at    :datetime
 #  updated_at    :datetime
-#  delay         :integer
+#  delay_by      :integer
 #
 
 class ResponseAction < ActiveRecord::Base

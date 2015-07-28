@@ -18,3 +18,8 @@
 #  wizard_id       :integer
 #
 
+italian:
+  wizard: taste
+  order_index: 0
+  name: Italian
+  step_type: menu
