@@ -578,26 +578,26 @@ class HomeControllerTest < ActionController::TestCase
   #   assert_response :success
   # end
 
-  test 'If a new message does not match any wizard nothing is returned' do
-    post :wizard, { name: 'New guy', phone_number: '254722123456', text: 'Hi', notification_type: 'MessageReceived', account: @phone_number }
-    assert_response :success
+  # test 'If a new message does not match any wizard nothing is returned' do
+  #   post :wizard, { name: 'New guy', phone_number: '254722123456', text: 'Hi', notification_type: 'MessageReceived', account: @phone_number }
+  #   assert_response :success
 
-    expected = { ignore: true }
-    assert_equal expected.to_json, response.body
-  end
+  #   expected = { ignore: true }
+  #   assert_equal expected.to_json, response.body
+  # end
 
-  test 'If a new message matches a wizard then progress the first step of the wizard' do
-    wizard = Wizard.create! account: @account, start_keyword: 'Hi'
-    step = Step.create! wizard: wizard, step_type: 'dob', name: 'DOB', order_index: 0
-    question = Question.create! step: step, text: 'How old are you?'
+  # test 'If a new message matches a wizard then progress the first step of the wizard' do
+  #   wizard = Wizard.create! account: @account, start_keyword: 'Hi'
+  #   step = Step.create! wizard: wizard, step_type: 'dob', name: 'DOB', order_index: 0
+  #   question = Question.create! step: step, text: 'How old are you?'
 
-    post :wizard, { name: 'New dude', phone_number: '254722123456', text: 'Hi', notification_type: 'MessageReceived', account: @phone_number }
+  #   post :wizard, { name: 'New dude', phone_number: '254722123456', text: 'Hi', notification_type: 'MessageReceived', account: @phone_number }
 
-    resp = JSON.parse(response.body)
-    resp.has_key?('progress').must_equal true
-    resp.has_key?('message').must_equal true
-    resp['progress'].must_equal Progress.last.id    
+  #   resp = JSON.parse(response.body)
+  #   resp.has_key?('progress').must_equal true
+  #   resp.has_key?('message').must_equal true
+  #   resp['progress'].must_equal Progress.last.id    
 
-    resp['message'].must_equal question.text
-  end
+  #   resp['message'].must_equal question.text
+  # end
 end

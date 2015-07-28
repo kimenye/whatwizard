@@ -556,14 +556,6 @@ class HomeController < ApplicationController
       get_random(step.questions.reject{ |q| q.language != lang })
     end
 
-    def set_contact
-      @contact = Contact.find_by_phone_number(params[:phone_number])
-      if @contact.nil?
-        @contact = Contact.create! phone_number: params[:phone_number], name: params[:name], opted_in: nil, bot_complete: false
-      end
-      @contact
-    end
-
     def record_response
       if !@current_progress.nil? and is_text?
         Response.create! progress: @current_progress, text: params[:text], response_type: "Text"

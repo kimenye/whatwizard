@@ -1,0 +1,17 @@
+# == Schema Information
+#
+# Table name: wizards
+#
+#  id            :integer          not null, primary key
+#  start_keyword :string(255)
+#  account_id    :integer
+#  created_at    :datetime
+#  updated_at    :datetime
+#  name          :string(255)
+#  reset_keyword :string(255)
+#
+
+taste:
+  start_keyword: TASTE
+  account: eatout
+  reset_keyword: RESTART

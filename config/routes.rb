@@ -3,6 +3,7 @@ require "sidekiq/web"
 Whatwizard::Application.routes.draw do
   post "football/wizard"
   post "home/wizard"
+  post "voting/wizard"
   # post "home/wizard_new"
   root to: 'rails_admin/main#dashboard'
   mount RailsAdmin::Engine => '/admin'

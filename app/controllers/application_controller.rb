@@ -24,4 +24,17 @@ class ApplicationController < ActionController::Base
     responses.reject! { |r| r.nil? }
     responses
   end
+
+  def set_contact
+    @contact = Contact.find_by_phone_number(params[:phone_number])
+    if @contact.nil?
+      @contact = Contact.create! phone_number: params[:phone_number], name: params[:name], opted_in: nil, bot_complete: false
+    end
+    @contact
+  end
+
+  def is_text?
+    params[:notification_type] == "MessageReceived"
+  end
+
 end

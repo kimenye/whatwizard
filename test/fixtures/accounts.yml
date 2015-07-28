@@ -1,0 +1,16 @@
+# == Schema Information
+#
+# Table name: accounts
+#
+#  id           :integer          not null, primary key
+#  phone_number :string(255)
+#  auth_token   :string(255)
+#  name         :string(255)
+#  reset_code   :string(255)
+#  start_code   :string(255)
+#
+
+eatout:
+  phone_number: 254722200200
+  auth_token: 1234567890
+  name: Eatout
