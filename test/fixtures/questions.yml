@@ -20,3 +20,7 @@
 italian:
   step: italian
   text: What is your favourite ITALIAN restaurant in Nairobi?
+
+continental:
+  step: continental
+  text: What is your favourite CONTINENTAL restaurant in Nairobi?

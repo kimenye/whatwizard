@@ -24,3 +24,10 @@ italian:
   name: Italian
   step_type: menu
   wrong_answer: That is not a valid option please try again
+
+continental:
+  wizard: taste
+  order_index: 1
+  name: Continental
+  step_type: menu
+  wrong_answer: That is not a valid option please try again

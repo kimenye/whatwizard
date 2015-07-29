@@ -46,6 +46,11 @@ class VotingControllerTest < ActionController::TestCase
     # user responds with the first correct option
     post :wizard, user_entry('1')
     assert_response :success
+
+    continental = steps(:continental)
+    progress = Progress.where(contact: contact).last
+
+    assert_equal continental, progress.step
   end
 
   private

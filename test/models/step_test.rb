@@ -51,4 +51,13 @@ describe Step do
     assert_not step.is_valid? 'blah'
   end
 
+  test "Should be able to get the next step in a wizard" do
+
+    step = steps(:italian)
+    assert_not step.is_last?
+
+    continental = steps(:continental)
+    assert_equal continental, step.next_step
+  end
+
 end

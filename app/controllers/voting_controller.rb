@@ -36,13 +36,20 @@ class VotingController < ApplicationController
       if !valid
         responses = [ current.step.wrong_answer ]
       else
-        
+        # check if the current step is the last
+        current_step = current.step
+        if !current_step.is_last?
+          # if we have a next step
+          next_step = current_step.next_step
+          Progress.create! step: next_step, contact: @contact
+        end
       end
     end
     responses
   end
 
   def evaluate response, step
+    step.is_valid? response
   end
 
   def send_responses responses

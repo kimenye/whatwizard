@@ -32,3 +32,16 @@ ital_other:
   text: Other 
   index: 2
   option_type: other
+
+cont_thyme:
+  step: continental
+  key: 1
+  index: 0
+  text: About Thyme
+
+cont_other:
+  step: continental
+  key: 2
+  index: 1
+  text: Other
+  option_type: other

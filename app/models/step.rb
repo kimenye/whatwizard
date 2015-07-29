@@ -24,7 +24,7 @@ class Step < ActiveRecord::Base
   has_many :contacts, through: :progress
   has_many :menus
   has_many :options
-  belongs_to :next_step, class_name: 'Step'
+  # belongs_to :next_step, class_name: 'Step'
   belongs_to :account
   belongs_to :wizard
 
@@ -56,6 +56,14 @@ class Step < ActiveRecord::Base
       valid = !options.select{ |opt| opt.key.downcase == response.downcase }.empty?
     end
     valid
+  end
+
+  def is_last?
+    next_step.nil?
+  end
+
+  def next_step
+    Step.where(wizard: wizard).where('order_index > ?', order_index).order(:order_index).last
   end
 
   def self.is_valid_date? str
