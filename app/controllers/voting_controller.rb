@@ -7,10 +7,11 @@ class VotingController < ApplicationController
       text = params[:text]
 
       wizard = Wizard.where('start_keyword like ?', text.upcase).first
-      if wizard.nil?
+      progress = Progress.where(contact: @contact).last
+      if wizard.nil? && progress.nil?
         render json: { ignore: true }
       else
-        responses = progress(wizard)
+        responses = progress(wizard, text)
         send_responses responses
         render json: { success: true, responses: responses }
       end
@@ -19,18 +20,28 @@ class VotingController < ApplicationController
     end
   end
 
-  def progress wizard
+  def progress wizard, response
     current = Progress.where(contact_id: @contact.id).order(id: :desc).first
-    responses = []
+    responses = []    
     if current.nil?
       # we are at the beginning
       # therefore return the welcome_text of the wizard
 
       # get the first step of the wizard
       step = wizard.steps.order(:order_index).first
+      Progress.create! step: step, contact: @contact
       responses = [ wizard.welcome_text, step.to_question ]
+    else
+      valid = evaluate response, current.step
+      # binding.pry
+      if !valid
+        responses = [ current.step.wrong_answer ]
+      end
     end
     responses
+  end
+
+  def evaluate response, step
   end
 
   def send_responses responses
