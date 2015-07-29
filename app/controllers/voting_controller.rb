@@ -42,6 +42,8 @@ class VotingController < ApplicationController
           # if we have a next step
           next_step = current_step.next_step
           Progress.create! step: next_step, contact: @contact
+
+          responses = [ next_step.to_question ]
         end
       end
     end

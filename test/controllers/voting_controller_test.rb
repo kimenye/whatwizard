@@ -51,6 +51,8 @@ class VotingControllerTest < ActionController::TestCase
     progress = Progress.where(contact: contact).last
 
     assert_equal continental, progress.step
+    expected = { success: true, responses: [ continental.to_question ]}
+    assert_equal expected.to_json, response.body
   end
 
   private
