@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150728094145) do
+ActiveRecord::Schema.define(version: 20150728185218) do
 
   create_table "accounts", force: true do |t|
     t.string "phone_number"
@@ -116,6 +116,7 @@ ActiveRecord::Schema.define(version: 20150728094145) do
     t.datetime "updated_at"
     t.integer  "menu_id"
     t.integer  "question_id"
+    t.string   "option_type", default: "key"
   end
 
   add_index "options", ["menu_id"], name: "index_options_on_menu_id"

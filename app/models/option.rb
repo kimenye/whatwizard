@@ -11,6 +11,7 @@
 #  updated_at  :datetime
 #  menu_id     :integer
 #  question_id :integer
+#  option_type :string(255)      default("key")
 #
 
 class Option < ActiveRecord::Base

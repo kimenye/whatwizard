@@ -11,6 +11,7 @@
 #  updated_at  :datetime
 #  menu_id     :integer
 #  question_id :integer
+#  option_type :string(255)      default("key")
 #
 
 ital_360:
@@ -24,3 +25,10 @@ ital_fire:
   key: 2
   text: Urban Eatery
   index: 1
+
+ital_other:
+  step: italian
+  key: 3
+  text: Other 
+  index: 2
+  option_type: other
