@@ -42,4 +42,13 @@ describe Step do
 
     assert_equal expected, step.to_question
   end
+
+  test "Should be able to evaluate if an option is valid" do
+    step = steps(:italian)
+
+    assert step.is_valid? '1'
+    assert step.is_valid? '2'
+    assert_not step.is_valid? 'blah'
+  end
+
 end

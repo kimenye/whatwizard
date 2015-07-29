@@ -50,6 +50,14 @@ class Step < ActiveRecord::Base
     [['Add to List', 'add-to-list'], ['End Conversation', 'end-conversation']]
   end
 
+  def is_valid? response
+    valid = false
+    if step_type == 'menu'
+      valid = !options.select{ |opt| opt.key.downcase == response.downcase }.empty?
+    end
+    valid
+  end
+
   def self.is_valid_date? str
     if str.length > 8
       begin

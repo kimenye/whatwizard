@@ -42,6 +42,10 @@ class VotingControllerTest < ActionController::TestCase
 
     expected = { success: true, responses: [ step_one.wrong_answer ]}
     assert_equal expected.to_json, response.body
+
+    # user responds with the first correct option
+    post :wizard, user_entry('1')
+    assert_response :success
   end
 
   private

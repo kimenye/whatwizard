@@ -33,9 +33,10 @@ class VotingController < ApplicationController
       responses = [ wizard.welcome_text, step.to_question ]
     else
       valid = evaluate response, current.step
-      # binding.pry
       if !valid
         responses = [ current.step.wrong_answer ]
+      else
+        
       end
     end
     responses
