@@ -97,6 +97,12 @@ class VotingControllerTest < ActionController::TestCase
     contact.reload
 
     assert contact.bot_complete
+
+    post :wizard, user_entry('1')
+    assert_response :success
+
+    expected = { success: true }
+    assert_equal expected.to_json, response.body    
   end
 
   private

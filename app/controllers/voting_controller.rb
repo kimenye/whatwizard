@@ -3,7 +3,7 @@ class VotingController < ApplicationController
   before_action :set_contact, only: [:wizard]
 
   def wizard
-    if is_text?
+    if is_text? && !@contact.bot_complete
       text = params[:text]
       wizard = Wizard.where('start_keyword like ?', text.upcase).first
       progress = Progress.where(contact: @contact).last
