@@ -16,6 +16,7 @@
 #  action          :string(255)
 #  account_id      :integer
 #  wizard_id       :integer
+#  final_message   :text
 #
 
 italian:
@@ -33,3 +34,4 @@ continental:
   step_type: menu
   wrong_answer: That is not a valid option please try again
   rebound: Please type the name of your favourite restaurant in this category
+  final_message: Thank you for casting your vote! Keep up with all things Taste Awards by visiting taste.co.ke. 

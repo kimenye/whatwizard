@@ -16,6 +16,7 @@
 #  action          :string(255)
 #  account_id      :integer
 #  wizard_id       :integer
+#  final_message   :text
 #
 
 class Step < ActiveRecord::Base

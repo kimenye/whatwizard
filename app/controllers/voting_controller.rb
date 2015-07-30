@@ -59,6 +59,11 @@ class VotingController < ApplicationController
         if !current_step.is_last?
           # if we have a next step
           responses = move_forward(current, response)
+        else
+          # return the final message
+          responses = [ current.step.final_message ]
+          @contact.bot_complete = true
+          @contact.save!
         end
       end
     end

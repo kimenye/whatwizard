@@ -80,6 +80,25 @@ class VotingControllerTest < ActionController::TestCase
     assert_equal expected.to_json, response.body
   end
 
+  test "When the wizard is complete we finish up with the last message" do
+    wizard = wizards(:taste)
+    step = steps(:continental)
+
+    contact = Contact.create! phone_number: '254722123456', name: 'Trevor', account: accounts(:eatout)
+    progress = Progress.create! step: step, contact: contact, response: '1'
+
+
+    post :wizard, user_entry('1')
+    assert_response :success
+
+    expected = { success: true, responses: [ step.final_message ]}
+    assert_equal expected.to_json, response.body
+
+    contact.reload
+
+    assert contact.bot_complete
+  end
+
   private
 
     def user_entry text
