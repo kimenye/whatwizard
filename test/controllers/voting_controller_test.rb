@@ -4,6 +4,7 @@ class VotingControllerTest < ActionController::TestCase
   before do
     @phone_number = accounts(:eatout).phone_number
     Progress.delete_all
+    Contact.delete_all
   end
 
   test "Should only begin if we have the correct start word" do
@@ -52,6 +53,22 @@ class VotingControllerTest < ActionController::TestCase
 
     assert_equal continental, progress.step
     expected = { success: true, responses: [ continental.to_question ]}
+    assert_equal expected.to_json, response.body    
+  end
+
+  test "Should be able to enter free-text as an option" do
+    wizard = wizards(:taste)
+    step = wizard.first_step
+
+    contact = Contact.create! phone_number: '254722123456', name: 'Trevor', account: accounts(:eatout)
+    progress = Progress.create! step: step, contact: contact
+
+    other = options(:ital_other)
+
+    post :wizard, user_entry(other.key)
+    assert_response :success
+
+    expected = { success: true, responses: [ step.rebound ] }
     assert_equal expected.to_json, response.body
   end
 

@@ -53,9 +53,13 @@ class Step < ActiveRecord::Base
   def is_valid? response
     valid = false
     if step_type == 'menu'
-      valid = !options.select{ |opt| opt.key.downcase == response.downcase }.empty?
+      valid = !options.select{ |opt| opt.option_type != "other" && opt.key.downcase == response.downcase }.empty?
     end
     valid
+  end
+
+  def is_other? response
+    !options.select{ |opt| opt.option_type == "other" && opt.key.downcase == response.downcase }.empty?
   end
 
   def is_last?

@@ -33,6 +33,10 @@ class Wizard < ActiveRecord::Base
     { progress: progress.id, message: question.to_message(contact) }
   end
 
+  def first_step
+    steps.order(:order_index).first
+  end
+
   def reset contact
     phone_number = contact.phone_number
     Progress.where(contact_id: contact.id).destroy_all

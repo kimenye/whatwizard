@@ -24,6 +24,7 @@ italian:
   name: Italian
   step_type: menu
   wrong_answer: That is not a valid option please try again
+  rebound: Please type the name of your favourite restaurant in this category
 
 continental:
   wizard: taste
@@ -31,3 +32,4 @@ continental:
   name: Continental
   step_type: menu
   wrong_answer: That is not a valid option please try again
+  rebound: Please type the name of your favourite restaurant in this category

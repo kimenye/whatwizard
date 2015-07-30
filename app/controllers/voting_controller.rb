@@ -5,7 +5,6 @@ class VotingController < ApplicationController
   def wizard
     if is_text?
       text = params[:text]
-
       wizard = Wizard.where('start_keyword like ?', text.upcase).first
       progress = Progress.where(contact: @contact).last
       if wizard.nil? && progress.nil?
@@ -33,8 +32,14 @@ class VotingController < ApplicationController
       responses = [ wizard.welcome_text, step.to_question ]
     else
       valid = evaluate response, current.step
-      if !valid
-        responses = [ current.step.wrong_answer ]
+
+      if !valid        
+        # check if the answer is other
+        if !current.step.is_other? response
+          responses = [ current.step.wrong_answer ]
+        else
+          responses = [ current.step.rebound ]
+        end
       else
         # check if the current step is the last
         current_step = current.step

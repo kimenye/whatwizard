@@ -49,6 +49,9 @@ describe Step do
     assert step.is_valid? '1'
     assert step.is_valid? '2'
     assert_not step.is_valid? 'blah'
+    
+    # other option
+    assert_not step.is_valid? '3'
   end
 
   test "Should be able to get the next step in a wizard" do
@@ -58,6 +61,12 @@ describe Step do
 
     continental = steps(:continental)
     assert_equal continental, step.next_step
+  end
+
+  test "Should be able to tell if the option is other" do
+    step = steps(:italian)
+    assert step.is_other? '3'
+    assert_not step.is_other? '1'
   end
 
 end
