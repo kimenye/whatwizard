@@ -28,7 +28,7 @@ class VotingController < ApplicationController
 
       # get the first step of the wizard
       step = wizard.steps.order(:order_index).first
-      Progress.create! step: step, contact: @contact
+      Progress.create! step: step, contact: @contact, response: response
       responses = [ wizard.welcome_text, step.to_question ]
     else
       valid = evaluate response, current.step
@@ -36,8 +36,21 @@ class VotingController < ApplicationController
       if !valid        
         # check if the answer is other
         if !current.step.is_other? response
-          responses = [ current.step.wrong_answer ]
+          # now check if our previous response was an other
+          # marking this a valid other response
+
+          was_other = current.step.is_other? current.response
+          if !was_other
+            responses = [ current.step.wrong_answer ]
+          else
+            # move to the next step
+            responses = move_forward(current, response)
+          end
         else
+          # update
+          current.response = response
+          current.save!
+
           responses = [ current.step.rebound ]
         end
       else
@@ -45,15 +58,19 @@ class VotingController < ApplicationController
         current_step = current.step
         if !current_step.is_last?
           # if we have a next step
-          next_step = current_step.next_step
-          Progress.create! step: next_step, contact: @contact
-
-          responses = [ next_step.to_question ]
+          responses = move_forward(current, response)
         end
       end
     end
     responses
   end
+
+  def move_forward current_progress, response
+    next_step = current_progress.step.next_step
+    Progress.create! step: next_step, contact: @contact, response: response
+
+    responses = [ next_step.to_question ]
+  end 
 
   def evaluate response, step
     step.is_valid? response

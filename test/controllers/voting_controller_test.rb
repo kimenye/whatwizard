@@ -36,6 +36,7 @@ class VotingControllerTest < ActionController::TestCase
 
     progress = Progress.find_by(contact: contact, step: step_one)
     assert_not progress.nil?
+    assert_equal start, progress.response
 
     # user responds with non-existent option
     post :wizard, user_entry('blahblah')
@@ -61,7 +62,7 @@ class VotingControllerTest < ActionController::TestCase
     step = wizard.first_step
 
     contact = Contact.create! phone_number: '254722123456', name: 'Trevor', account: accounts(:eatout)
-    progress = Progress.create! step: step, contact: contact
+    progress = Progress.create! step: step, contact: contact, response: 'taste'
 
     other = options(:ital_other)
 
@@ -69,6 +70,13 @@ class VotingControllerTest < ActionController::TestCase
     assert_response :success
 
     expected = { success: true, responses: [ step.rebound ] }
+    assert_equal expected.to_json, response.body
+
+    # now the user enters a free-text option
+    post :wizard, user_entry('Nairobi Java House')
+    assert_response :success
+
+    expected = { success: true, responses: [ step.next_step.to_question ]}
     assert_equal expected.to_json, response.body
   end
 
