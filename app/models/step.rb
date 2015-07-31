@@ -68,7 +68,7 @@ class Step < ActiveRecord::Base
   end
 
   def next_step
-    Step.where(wizard: wizard).where('order_index > ?', order_index).order(:order_index).last
+    Step.where(wizard: wizard).where('order_index > ?', order_index).order(:order_index).first
   end
 
   def self.is_valid_date? str
