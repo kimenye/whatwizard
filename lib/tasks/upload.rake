@@ -3,6 +3,8 @@ namespace :upload do
 
   task :taste_awards => :environment do
     Wizard.delete_all
+    Step.delete_all
+    Option.delete_all
 
     account = Account.find_or_create_by!(phone_number: '254723555555', name: 'Eatout')
     wizard = Wizard.find_or_create_by!(account: account, start_keyword: 'TASTE',
@@ -204,17 +206,23 @@ namespace :upload do
     steps.each_with_index do |step, idx|
       question = step.first
 
+      st = Step.create! wizard: wizard, order_index: idx, step_type: 'menu', 
+        wrong_answer: 'That is not a valid option please try again',
+        rebound: 'Please type the name of your favourite restaurant in this category', name: question
+
+      q = Question.create! step: st, text: question
+
       puts "Q: #{question}"
       options = step.last
       options.each_with_index do |opt, idx|
-        puts "#{idx+1} : #{opt}"
+        puts "#{idx+1} : #{opt}"        
+        Option.create! step: st, index: idx, key: idx+1, text: opt
       end
 
+      st.reload
+      num = st.options.count
+      Option.create! step: st, index: num, key: num+1, text: "OTHER", option_type: 'other'
       
-      # step = Step.find_or_create_by! wizard: wizard, order_index: idx, step_type: 'menu', 
-      #   wrong_answer: 'That is not a valid option please try again',
-      #   rebound: 'Please type the name of your favourite restaurant in this category'
-
       puts "\r\n"
     end
   end

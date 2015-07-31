@@ -42,6 +42,10 @@ RailsAdmin.config do |config|
     config.excluded_models << Prediction
     config.excluded_models << Round
     config.excluded_models << Team
+    config.excluded_models << ResponseAction
+    config.excluded_models << Question
+    config.excluded_models << SystemResponse
+    config.excluded_models << Response
 
     ## With an audit adapter, you can add:
     # history_index
