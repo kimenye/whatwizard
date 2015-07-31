@@ -11,8 +11,9 @@ class VotingController < ApplicationController
         render json: { ignore: true }
       else
         responses = progress(wizard, text)
-        send_responses responses
+        
         render json: { success: true, responses: responses }
+        send_responses responses
       end
     else
       render json: { success: true }

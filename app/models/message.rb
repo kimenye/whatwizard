@@ -65,5 +65,5 @@ class Message < ActiveRecord::Base
         	m.save!
       	end
 	end
-	handle_asynchronously :deliver
+	# handle_asynchronously :deliver
 end
