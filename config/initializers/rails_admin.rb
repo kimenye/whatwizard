@@ -55,12 +55,12 @@ RailsAdmin.config do |config|
         field :name
         field :step_type
         field :order_index
-        field :next_step
+        field :final_message
         field :expected_answer        
         field :wrong_answer
         field :rebound
         field :allow_continue  
-        field :account
+        # field :account
         # field :action      
       end
 
