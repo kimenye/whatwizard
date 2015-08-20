@@ -8,7 +8,7 @@ class VotingController < ApplicationController
 
         last_response = Progress.where(contact: contact).order('created_at DESC').first
         responses = Progress.where(contact: contact).collect{ |progress| { step: progress.step.order_index + 1, response: progress.response, answer: progress.step.get_option(progress.response)  } }
-        { contact: contact.phone_number, responses: responses, date: last_response.created_at }
+        { contact: contact.phone_number, responses: responses, date: last_response.try(:created_at) }
       end
 
       render json: results
