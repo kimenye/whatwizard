@@ -43,6 +43,15 @@ class Step < ActiveRecord::Base
     question = get_random(questions)    
   end
 
+  def get_option key
+    valid = options.select{ |o| o.key == key }
+    if valid.blank?
+      return "Other"
+    else
+      return valid.first.text
+    end
+  end
+
   def step_type_enum
   	[['Date of Birth','dob'], ['Opt In', 'opt-in'], ['Yes or No', 'yes-no'], ['Numeric', 'numeric'], ['Entry', 'serial'], ['Free Text', 'free-text'], ['Menu', 'menu'], ['Exact', 'exact']]
   end

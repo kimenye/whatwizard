@@ -4,10 +4,10 @@ class VotingController < ApplicationController
 
   def results
     if params.has_key?(:token) && !Account.find_by_auth_token(params[:token]).nil?
-      results = Contact.where(bot_complete: true).collect do |contact|
+      results = Contact.all.collect do |contact|
 
         last_response = Progress.where(contact: contact).order('created_at DESC').first
-        responses = Progress.where(contact: contact).collect{ |progress| { step: progress.step.order_index + 1, response: progress.response  } }
+        responses = Progress.where(contact: contact).collect{ |progress| { step: progress.step.order_index + 1, response: progress.response, answer: progress.step.get_option(progress.response)  } }
         { contact: contact.phone_number, responses: responses, date: last_response.created_at }
       end
 
