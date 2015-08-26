@@ -22,7 +22,7 @@ class VotingController < ApplicationController
   def simple_results
     if params.has_key?(:token) && !Account.find_by_auth_token(params[:token]).nil?
       results = Contact.all.collect do |contact|
-        responses = Progress.where(contact: contact).collect { |p| p.response }
+        responses = Progress.where(contact: contact).where.not(step_id: nil).collect { |p| p.response }
         if !responses.empty?
           responses.shift
         end
