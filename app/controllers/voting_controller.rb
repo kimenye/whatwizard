@@ -26,8 +26,10 @@ class VotingController < ApplicationController
         if !responses.empty?
           responses.shift
         end
-        { contact: contact.phone_number, date: contact.created_at, responses: responses }
+        { contact: contact.phone_number, date: contact.created_at, responses: responses }      
       end
+
+      render json: results
     end
   end
 
