@@ -9,8 +9,8 @@ class VotingController < ApplicationController
         responses = []
         last_response = Progress.where(contact: contact).order('created_at DESC').first
         if !last_response.blank?
-          responses = Progress.where(contact: contact).where.not(step_id: nil).collect{ |progress| { step: progress.step.order_index + 1, response: progress.response, answer: progress.step.get_option(progress.response)  } }
-          { contact: contact.phone_number, responses: responses, date: last_response.try(:created_at) }
+          answers = Progress.where(contact: contact).where.not(step_id: nil).collect{ |progress| { step: progress.step.order_index + 1, response: progress.response, answer: progress.step.get_option(progress.response)  } }
+          responses = { contact: contact.phone_number, responses: answers, date: last_response.try(:created_at) }
         end
         responses
       end
