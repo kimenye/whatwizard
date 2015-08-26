@@ -19,6 +19,18 @@ class VotingController < ApplicationController
     end
   end
 
+  def simple_results
+    if params.has_key?(:token) && !Account.find_by_auth_token(params[:token]).nil?
+      results = Contact.all.collect do |contact|
+        responses = Progress.where(contact: contact).collect { |p| p.response }
+        if !responses.empty?
+          responses.shift
+        end
+        { contact: contact.phone_number, date: contact.created_at, responses: responses }
+      end
+    end
+  end
+
   def wizard
     if is_text? && !@contact.bot_complete
       text = params[:text]
